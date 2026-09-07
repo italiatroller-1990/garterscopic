@@ -293,7 +293,9 @@ func (g *DependencyGraph) FilesForPage(page string) []string {
 
 func (g *DependencyGraph) BuildFromLayout(components map[string]string, layouts map[string][]string) {
 	for page, layout := range layouts {
-		g.AddDependency(page, layout)
+		for _, l := range layout {
+			g.AddDependency(page, l)
+		}
 	}
 	for page, comp := range components {
 		g.AddDependency(page, comp)
