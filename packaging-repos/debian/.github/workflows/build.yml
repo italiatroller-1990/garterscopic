@@ -1,0 +1,129 @@
+name: Build Debian Packages
+
+on:
+  repository_dispatch:
+    types: [garterscopic-released]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Upstream version (e.g., v1.0.0)'
+        required: true
+        type: string
+  schedule:
+    - cron: '0 */6 * * *'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  detect-release:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for new release
+        id: check
+        run: |
+          LATEST=$(curl -sL https://api.github.com/repos/garterscopic/garterscopic/releases/latest | jq -r .tag_name)
+          LAST=$(cat .last-version 2>/dev/null || echo "")
+          if [ "$LATEST" != "$LAST" ]; then
+            echo "version=$LATEST" >> $GITHUB_OUTPUT
+            echo "$LATEST" > .last-version
+          else
+            echo "No new version"
+          fi
+
+  build:
+    needs: detect-release
+    if: needs.detect-release.outputs.version != '' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+        dist: [bookworm, bullseye, focal, jammy, noble]
+    steps:
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "version=${{ github.event.client_payload.version }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ needs.detect-release.outputs.version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download binary
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          PLATFORM="linux-${{ matrix.arch }}"
+          curl -sL "https://github.com/garterscopic/garterscopic/releases/download/${VERSION}/garterscopic-${PLATFORM}" -o garterscopic
+          chmod +x garterscopic
+
+      - name: Build package
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          ARCH: ${{ matrix.arch }}
+          DIST: ${{ matrix.dist }}
+        run: |
+          ./build-deb.sh
+
+      - name: Validate package
+        run: |
+          dpkg-deb --info dist/garterscopic_*.deb
+          dpkg-deb -c dist/garterscopic_*.deb
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: garterscopic-${{ matrix.dist }}-${{ matrix.arch }}
+          path: dist/*.deb
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Organize packages
+        run: |
+          mkdir -p pool/main/g/garterscopic
+          cp artifacts/**/*.deb pool/main/g/garterscopic/ 2>/dev/null || true
+          find artifacts -name "*.deb" -exec cp {} pool/main/g/garterscopic/ \;
+
+      - name: Generate Packages
+        run: |
+          cd pool/main/g/garterscopic
+          for deb in *.deb; do
+            dpkg-sig --verify "$deb" 2>/dev/null || true
+            dpkg-deb -I "$deb" >> ../Packages
+            echo "" >> ../Packages
+          done
+          cd ..
+          apt-ftparchive packages . > Packages
+          gzip -k -f Packages
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload to Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

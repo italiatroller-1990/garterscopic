@@ -1,0 +1,12 @@
+post_install() {
+    echo "==> Garterscopic installed successfully!"
+    echo "==> Run 'garterscopic --help' to get started"
+}
+
+post_upgrade() {
+    post_install
+}
+
+post_remove() {
+    echo "==> Garterscopic removed"
+}

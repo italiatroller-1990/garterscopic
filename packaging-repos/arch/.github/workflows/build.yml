@@ -1,0 +1,158 @@
+name: Build Arch Linux Packages
+
+on:
+  repository_dispatch:
+    types: [garterscopic-released]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Upstream version (e.g., v1.0.0)'
+        required: true
+        type: string
+  schedule:
+    - cron: '0 */6 * * *'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  detect-release:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for new release
+        id: check
+        run: |
+          LATEST=$(curl -sL https://api.github.com/repos/garterscopic/garterscopic/releases/latest | jq -r .tag_name)
+          LAST=$(cat .last-version 2>/dev/null || echo "")
+          if [ "$LATEST" != "$LAST" ]; then
+            echo "version=$LATEST" >> $GITHUB_OUTPUT
+            echo "$LATEST" > .last-version
+          else
+            echo "No new version"
+          fi
+
+  build:
+    needs: detect-release
+    if: needs.detect-release.outputs.version != '' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [x86_64, aarch64]
+    container:
+      image: archlinux:latest
+    steps:
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "version=${{ github.event.client_payload.version }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ needs.detect-release.outputs.version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Initialize keyring
+        run: |
+          pacman-key --init
+          pacman-key --populate archlinux
+
+      - name: Install dependencies
+        run: |
+          pacman -Sy --noconfirm base-devel sudo
+
+      - name: Configure makepkg
+        run: |
+          useradd -m builder
+          echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
+          mkdir -p /tmp/pkgdest
+          chown -R builder:builder /tmp/pkgdest
+
+      - name: Download binary
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          case "${{ matrix.arch }}" in
+            x86_64) PLATFORM="linux-amd64" ;;
+            aarch64) PLATFORM="linux-arm64" ;;
+          esac
+          curl -sL "https://github.com/garterscopic/garterscopic/releases/download/${VERSION}/garterscopic-${PLATFORM}" -o garterscopic
+          chmod +x garterscopic
+          file garterscopic
+
+      - name: Build package
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          cd /tmp/pkgdest
+          cp /home/runner/work/garterscopic-arch/garterscopic-arch/PKGBUILD .
+          cp /home/runner/work/garterscopic-arch/garterscopic-arch/garterscopic.install .
+          sed -i "s/pkgver=.*/pkgver=${VERSION#v}/" PKGBUILD
+          chown -R builder:builder .
+          su builder -c "makepkg --skippgpcheck --skipchecksums"
+
+      - name: Validate package
+        run: |
+          cd /tmp/pkgdest
+          namcap *.pkg.tar.*
+          pacman -Qip *.pkg.tar.* || true
+          pacman -Qlp *.pkg.tar.* || true
+
+      - name: Test install
+        run: |
+          cd /tmp/pkgdest
+          pacman -U --noconfirm *.pkg.tar.*
+          garterscopic --version
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: garterscopic-arch-${{ matrix.arch }}
+          path: /tmp/pkgdest/*.pkg.tar.*
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Organize packages
+        run: |
+          mkdir -p x86_64 aarch64
+          find artifacts -name "*x86_64*.pkg.tar.*" -exec cp {} x86_64/ \;
+          find artifacts -name "*aarch64*.pkg.tar.*" -exec cp {} aarch64/ \;
+          ls -la x86_64/ aarch64/
+
+      - name: Generate database
+        run: |
+          for arch in x86_64 aarch64; do
+            cd $arch
+            repo-add garterscopic.db.tar.gz *.pkg.tar.*
+            cd ..
+          done
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload to Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

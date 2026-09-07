@@ -192,3 +192,42 @@ jobs:
     uses: ./.github/workflows/packages.yml
     with:
       version: ${{ needs.release.outputs.version }}
+
+  trigger-packaging-repos:
+    needs: [release, create-release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Debian packaging repo
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: token ${{ secrets.PACKAGING_DISPATCH_TOKEN }}" \
+            https://api.github.com/repos/italiatroller-1990/garterscopic-debian/dispatches \
+            -d "{\"event_type\": \"garterscopic-released\", \"client_payload\": {\"version\": \"${{ needs.release.outputs.version }}\", \"url\": \"https://github.com/italiatroller-1990/garterscopic/releases/tag/${{ needs.release.outputs.version }}\"}}"
+
+      - name: Trigger Fedora packaging repo
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: token ${{ secrets.PACKAGING_DISPATCH_TOKEN }}" \
+            https://api.github.com/repos/italiatroller-1990/garterscopic-fedora/dispatches \
+            -d "{\"event_type\": \"garterscopic-released\", \"client_payload\": {\"version\": \"${{ needs.release.outputs.version }}\", \"url\": \"https://github.com/italiatroller-1990/garterscopic/releases/tag/${{ needs.release.outputs.version }}\"}}"
+
+      - name: Trigger Arch packaging repo
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: token ${{ secrets.PACKAGING_DISPATCH_TOKEN }}" \
+            https://api.github.com/repos/italiatroller-1990/garterscopic-arch/dispatches \
+            -d "{\"event_type\": \"garterscopic-released\", \"client_payload\": {\"version\": \"${{ needs.release.outputs.version }}\", \"url\": \"https://github.com/italiatroller-1990/garterscopic/releases/tag/${{ needs.release.outputs.version }}\"}}"
+
+      - name: Trigger Nix flake update
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: token ${{ secrets.PACKAGING_DISPATCH_TOKEN }}" \
+            https://api.github.com/repos/italiatroller-1990/garterscopic-nix/dispatches \
+            -d "{\"event_type\": \"garterscopic-released\", \"client_payload\": {\"version\": \"${{ needs.release.outputs.version }}\", \"url\": \"https://github.com/italiatroller-1990/garterscopic/releases/tag/${{ needs.release.outputs.version }}\"}}"
+
+      - name: Done
+        run: echo "All packaging repos notified for ${{ needs.release.outputs.version }}"

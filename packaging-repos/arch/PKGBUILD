@@ -1,0 +1,25 @@
+# Maintainer: Garterscopic Team <team@garterscopic.dev>
+
+pkgname=garterscopic
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Declarative Lightweight Static Site Generator"
+arch=('x86_64' 'aarch64')
+url="https://garterscopic.dev"
+license=('MIT')
+depends=('bash')
+makedepends=('go')
+optdepends=()
+provides=("garterscopic")
+conflicts=('garterscopic')
+source_x86_64=("garterscopic-$pkgver::https://github.com/garterscopic/garterscopic/releases/download/v$pkgver/garterscopic-linux-amd64")
+source_aarch64=("garterscopic-$pkgver::https://github.com/garterscopic/garterscopic/releases/download/v$pkgver/garterscopic-linux-arm64")
+sha256sums_x86_64=('SKIP')
+sha256sums_aarch64=('SKIP')
+
+package() {
+    install -Dm755 "garterscopic-$pkgver" "$pkgdir/usr/bin/garterscopic"
+    install -Dm644 /dev/stdin "$pkgdir/usr/share/licenses/$pkgname/LICENSE" <<'EOF'
+MIT License
+EOF
+}
