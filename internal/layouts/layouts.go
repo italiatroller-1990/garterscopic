@@ -16,7 +16,7 @@ type Layout struct {
 }
 
 type rawLayout struct {
-	Name       string          `yaml:"name"`
+	Name       string                `yaml:"name"`
 	Components []components.Instance `yaml:"components"`
 }
 

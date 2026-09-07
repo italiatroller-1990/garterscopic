@@ -8,15 +8,15 @@ import (
 )
 
 type SiteConfig struct {
-	Name            string            `yaml:"name"`
-	BaseURL         string            `yaml:"base_url"`
-	Build           BuildConfig       `yaml:"build"`
-	DefaultLayout   string            `yaml:"default_layout"`
-	DefaultPageType string            `yaml:"default_page_type"`
-	Assets          AssetsConfig      `yaml:"assets"`
-	Styles          StylesConfig      `yaml:"styles"`
-	Scripts         []ScriptConfig    `yaml:"scripts"`
-	Language        string            `yaml:"language"`
+	Name            string         `yaml:"name"`
+	BaseURL         string         `yaml:"base_url"`
+	Build           BuildConfig    `yaml:"build"`
+	DefaultLayout   string         `yaml:"default_layout"`
+	DefaultPageType string         `yaml:"default_page_type"`
+	Assets          AssetsConfig   `yaml:"assets"`
+	Styles          StylesConfig   `yaml:"styles"`
+	Scripts         []ScriptConfig `yaml:"scripts"`
+	Language        string         `yaml:"language"`
 }
 
 type BuildConfig struct {

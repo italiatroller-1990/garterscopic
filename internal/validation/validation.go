@@ -8,8 +8,8 @@ import (
 	"github.com/garterscopic/garterscopic/internal/components"
 	"github.com/garterscopic/garterscopic/internal/config"
 	"github.com/garterscopic/garterscopic/internal/layouts"
-	"github.com/garterscopic/garterscopic/internal/pagetypes"
 	"github.com/garterscopic/garterscopic/internal/pages"
+	"github.com/garterscopic/garterscopic/internal/pagetypes"
 	"github.com/garterscopic/garterscopic/internal/routing"
 )
 
@@ -44,11 +44,11 @@ func (e *BuildError) Add(err *Error) {
 }
 
 type Validator struct {
-	Config      *config.SiteConfig
-	Components  map[string]components.Definition
-	Layouts     map[string]layouts.Layout
-	PageTypes   map[string]pagetypes.PageType
-	Pages       []pages.Page
+	Config     *config.SiteConfig
+	Components map[string]components.Definition
+	Layouts    map[string]layouts.Layout
+	PageTypes  map[string]pagetypes.PageType
+	Pages      []pages.Page
 }
 
 func New(cfg *config.SiteConfig) *Validator {

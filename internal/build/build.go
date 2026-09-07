@@ -12,8 +12,8 @@ import (
 	"github.com/garterscopic/garterscopic/internal/config"
 	"github.com/garterscopic/garterscopic/internal/layouts"
 	"github.com/garterscopic/garterscopic/internal/markdown"
-	"github.com/garterscopic/garterscopic/internal/pagetypes"
 	"github.com/garterscopic/garterscopic/internal/pages"
+	"github.com/garterscopic/garterscopic/internal/pagetypes"
 	"github.com/garterscopic/garterscopic/internal/renderer"
 	"github.com/garterscopic/garterscopic/internal/routing"
 	"github.com/garterscopic/garterscopic/internal/styles"
@@ -22,10 +22,10 @@ import (
 
 type BuildResult struct {
 	PagesGenerated int
-	AssetsCopied  int
-	Components    int
-	Layouts       int
-	PageTypes     int
+	AssetsCopied   int
+	Components     int
+	Layouts        int
+	PageTypes      int
 }
 
 func (r *BuildResult) GetPagesGenerated() int {

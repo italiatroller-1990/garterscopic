@@ -10,9 +10,9 @@ import (
 )
 
 type Definition struct {
-	Name    string                     `yaml:"name"`
-	File    string                     `yaml:"file"`
-	Style   string                     `yaml:"style"`
+	Name    string                      `yaml:"name"`
+	File    string                      `yaml:"file"`
+	Style   string                      `yaml:"style"`
 	Options map[string]OptionDefinition `yaml:"options"`
 }
 
@@ -27,8 +27,8 @@ type Definitions struct {
 }
 
 type ComponentDef struct {
-	File    string                     `yaml:"file"`
-	Style   string                     `yaml:"style"`
+	File    string                      `yaml:"file"`
+	Style   string                      `yaml:"style"`
 	Options map[string]OptionDefinition `yaml:"options"`
 }
 

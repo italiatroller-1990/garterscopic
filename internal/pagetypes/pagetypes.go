@@ -11,9 +11,9 @@ import (
 )
 
 type PageType struct {
-	Name       string                  `yaml:"name"`
-	Layout     string                  `yaml:"layout"`
-	Fields     map[string]FieldDef     `yaml:"fields"`
+	Name   string              `yaml:"name"`
+	Layout string              `yaml:"layout"`
+	Fields map[string]FieldDef `yaml:"fields"`
 }
 
 type FieldDef struct {
@@ -23,8 +23,8 @@ type FieldDef struct {
 }
 
 type rawPageType struct {
-	Name   string             `yaml:"name"`
-	Layout string             `yaml:"layout"`
+	Name   string              `yaml:"name"`
+	Layout string              `yaml:"layout"`
 	Fields map[string]FieldDef `yaml:"fields"`
 }
 

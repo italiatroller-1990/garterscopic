@@ -14,9 +14,9 @@ import (
 )
 
 type Server struct {
-	Config   *config.SiteConfig
-	Port     int
-	Builder  BuilderInterface
+	Config     *config.SiteConfig
+	Port       int
+	Builder    BuilderInterface
 	httpServer *http.Server
 	watcher    *Watcher
 }
