@@ -1,0 +1,21 @@
+name = "garterscopic-docs"
+compatibility_date = "2026-09-07"
+
+# Modern Cloudflare Workers static-assets deployment for a generated MkDocs site.
+# Run the following locally or in CI before deploying:
+#   python -m pip install -r requirements.txt && mkdocs build
+#
+# The built site is emitted into ./site, and Wrangler serves that directory as
+# static assets for the Worker.
+
+[build]
+command = "python -m pip install -r requirements.txt && mkdocs build"
+
+[assets]
+directory = "./site"
+binding = "ASSETS"
+not_found_handling = "404-page"
+
+# If you are deploying to Cloudflare Pages instead of Workers, use:
+# pages_build_output_dir = "site"
+# and keep the build command in the Pages project settings.

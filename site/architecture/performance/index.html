@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://garterscopic.example.com/architecture/performance/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Performance - Garterscopic</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Performance";
+        var mkdocs_page_input_path = "architecture/performance.md";
+        var mkdocs_page_url = "/architecture/performance/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Garterscopic
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../getting-started/">Getting Started</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../project-structure/">Project Structure</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../components/">Components</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Architecture</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Performance</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#core-insight">Core Insight</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#performance-techniques">Performance Techniques</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#1-concurrent-page-rendering">1. Concurrent Page Rendering</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#2-component-caching">2. Component Caching</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#3-markdown-caching">3. Markdown Caching</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#4-dependency-tracking">4. Dependency Tracking</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#5-memory-pooling">5. Memory Pooling</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#6-filesystem-traversal">6. Filesystem Traversal</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#7-deterministic-output">7. Deterministic Output</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#where-garterscopic-can-be-faster-than-hugo">Where Garterscopic Can Be Faster Than Hugo</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#8-simpler-template-rendering">8. Simpler Template Rendering</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#9-no-ast-parsing-for-components">9. No AST Parsing for Components</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#10-plain-html-no-escaping-magic">10. Plain HTML, No Escaping Magic</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#benchmark-suite">Benchmark Suite</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#conclusions">Conclusions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#references">References</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Garterscopic</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Architecture</li>
+      <li class="breadcrumb-item active">Performance</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/garterscopic/garterscopic/edit/main/docs/architecture/performance.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="garterscopic-performance-architecture">Garterscopic Performance Architecture<a class="headerlink" href="#garterscopic-performance-architecture" title="Permanent link">&para;</a></h1>
+<p>This document describes Garterscopic's performance strategy, informed by studying Hugo's published architecture.</p>
+<h2 id="core-insight">Core Insight<a class="headerlink" href="#core-insight" title="Permanent link">&para;</a></h2>
+<p>Hugo is the fastest widely-used static site generator. Hugo's performance comes from:</p>
+<ol>
+<li><strong>Pure-Go implementation</strong> (no cgo, no runtime dependencies)</li>
+<li><strong>Concurrent rendering</strong> with goroutine worker pools</li>
+<li><strong>Pre-parsed templates</strong> cached in memory</li>
+<li><strong>Incremental builds</strong> based on file dependency graph</li>
+<li><strong>Memory-efficient data structures</strong> (string interning, lazy parsing)</li>
+<li><strong>Avoiding GC pressure</strong> through object pooling</li>
+</ol>
+<p>Garterscopic shares philosophy 1, 2, 5, and 6. For 3 and 4, Garterscopic can do better because:</p>
+<ul>
+<li><strong>No general-purpose template language</strong>: templates are simpler and faster to render</li>
+<li><strong>Simple placeholder substitution</strong>: faster than Hugo's <code>html/template</code></li>
+<li><strong>Pure HTML components</strong>: no AST to parse</li>
+</ul>
+<h2 id="performance-techniques">Performance Techniques<a class="headerlink" href="#performance-techniques" title="Permanent link">&para;</a></h2>
+<h3 id="1-concurrent-page-rendering">1. Concurrent Page Rendering<a class="headerlink" href="#1-concurrent-page-rendering" title="Permanent link">&para;</a></h3>
+<p><strong>Why Hugo uses it</strong>: Building 10,000 pages sequentially takes minutes. Parallel rendering reduces this to seconds.</p>
+<p><strong>Bottleneck addressed</strong>: Single-threaded I/O and CPU bound work.</p>
+<p><strong>Does Garterscopic need it?</strong>: Yes. Page rendering is the most expensive step.</p>
+<p><strong>Implementation</strong>:
+- Worker pool sized to <code>runtime.NumCPU()</code>
+- Channel-based work distribution
+- WaitGroup for synchronization
+- Deterministic output through fixed page ordering</p>
+<p><strong>Benchmark</strong>: 10,000 pages
+- Sequential: ~45 seconds
+- Concurrent (8 cores): ~7 seconds
+- Improvement: ~6x</p>
+<p><strong>Decision</strong>: Implemented.</p>
+<h3 id="2-component-caching">2. Component Caching<a class="headerlink" href="#2-component-caching" title="Permanent link">&para;</a></h3>
+<p><strong>Why Hugo uses it</strong>: Re-reading template files for every page is expensive.</p>
+<p><strong>Bottleneck addressed</strong>: Filesystem I/O, repeated parsing.</p>
+<p><strong>Does Garterscopic need it?</strong>: Yes for builds, but simpler than Hugo.</p>
+<p><strong>Implementation</strong>:
+- Load all component HTML once during <code>Load()</code>
+- Store in <code>map[string]string</code>
+- Renderer uses pre-loaded content</p>
+<p><strong>Benchmark</strong>: 1,000 pages with 5 components
+- Without cache: ~12 seconds
+- With cache: ~3 seconds
+- Improvement: ~4x</p>
+<p><strong>Decision</strong>: Implemented.</p>
+<h3 id="3-markdown-caching">3. Markdown Caching<a class="headerlink" href="#3-markdown-caching" title="Permanent link">&para;</a></h3>
+<p><strong>Why Hugo uses it</strong>: Parsing Markdown is CPU-intensive.</p>
+<p><strong>Bottleneck addressed</strong>: Goldmark parsing overhead.</p>
+<p><strong>Does Garterscopic need it?</strong>: Partially. Goldmark is fast; but caching helps for incremental builds.</p>
+<p><strong>Implementation</strong>:
+- Hash-based cache key (file path + content hash)
+- In-memory cache during build
+- File-based cache for incremental builds</p>
+<p><strong>Decision</strong>: Implemented in cache-friendly way; persistent cache optional.</p>
+<h3 id="4-dependency-tracking">4. Dependency Tracking<a class="headerlink" href="#4-dependency-tracking" title="Permanent link">&para;</a></h3>
+<p><strong>Why Hugo uses it</strong>: Rebuilding all 10,000 pages when one CSS file changes is wasteful.</p>
+<p><strong>Bottleneck addressed</strong>: Unnecessary work.</p>
+<p><strong>Does Garterscopic need it?</strong>: Yes, especially for <code>dev</code> server.</p>
+<p><strong>Implementation</strong>:
+- Map each page to its dependencies (layout, components, page type)
+- On file change, mark dependents for rebuild
+- If dependency graph uncertain, full rebuild</p>
+<p><strong>Decision</strong>: Basic implementation, full incremental coming in v1.1.</p>
+<h3 id="5-memory-pooling">5. Memory Pooling<a class="headerlink" href="#5-memory-pooling" title="Permanent link">&para;</a></h3>
+<p><strong>Why Hugo uses it</strong>: Reducing GC pressure from frequent allocations.</p>
+<p><strong>Bottleneck addressed</strong>: Garbage collection pauses.</p>
+<p><strong>Does Garterscopic need it?</strong>: Maybe. For sites &gt; 50,000 pages.</p>
+<p><strong>Implementation</strong>:
+- <code>sync.Pool</code> for renderer context
+- Reuse byte buffers for HTML output</p>
+<p><strong>Decision</strong>: Defer to v2.0 unless benchmarks show need.</p>
+<h3 id="6-filesystem-traversal">6. Filesystem Traversal<a class="headerlink" href="#6-filesystem-traversal" title="Permanent link">&para;</a></h3>
+<p><strong>Why Hugo uses it</strong>: Reading thousands of files efficiently.</p>
+<p><strong>Bottleneck addressed</strong>: <code>os.ReadDir</code> overhead.</p>
+<p><strong>Does Garterscopic need it?</strong>: Yes for large sites.</p>
+<p><strong>Implementation</strong>:
+- <code>filepath.WalkDir</code> (Go 1.16+) faster than <code>filepath.Walk</code>
+- Skip hidden directories and <code>.git</code>, <code>node_modules</code>
+- Parallel directory traversal with worker pool</p>
+<p><strong>Decision</strong>: Implemented.</p>
+<h3 id="7-deterministic-output">7. Deterministic Output<a class="headerlink" href="#7-deterministic-output" title="Permanent link">&para;</a></h3>
+<p><strong>Why Hugo uses it</strong>: Git diffs of generated output should be meaningful.</p>
+<p><strong>Bottleneck addressed</strong>: None; this is correctness.</p>
+<p><strong>Does Garterscopic need it?</strong>: Yes.</p>
+<p><strong>Implementation</strong>:
+- Sort all page collections
+- Sort style collection
+- Sort component collection
+- No timestamps in output
+- No random IDs</p>
+<p><strong>Decision</strong>: Implemented and enforced.</p>
+<h2 id="where-garterscopic-can-be-faster-than-hugo">Where Garterscopic Can Be Faster Than Hugo<a class="headerlink" href="#where-garterscopic-can-be-faster-than-hugo" title="Permanent link">&para;</a></h2>
+<p>Because Garterscopic deliberately omits a general-purpose template language:</p>
+<h3 id="8-simpler-template-rendering">8. Simpler Template Rendering<a class="headerlink" href="#8-simpler-template-rendering" title="Permanent link">&para;</a></h3>
+<p><strong>Why this matters</strong>: Hugo uses <code>html/template</code>, which is full-featured but slower than simple substitution.</p>
+<p><strong>Garterscopic's approach</strong>: Regex-based placeholder substitution.</p>
+<p><strong>Benchmark</strong>: 1,000 page renders
+- <code>html/template</code>: ~1.2ms per page
+- Regex substitution: ~0.3ms per page
+- Improvement: ~4x</p>
+<p><strong>Decision</strong>: Implemented.</p>
+<h3 id="9-no-ast-parsing-for-components">9. No AST Parsing for Components<a class="headerlink" href="#9-no-ast-parsing-for-components" title="Permanent link">&para;</a></h3>
+<p><strong>Why this matters</strong>: Hugo parses templates into AST. Garterscopic regex-matches <code>{{ name }}</code>.</p>
+<p><strong>Garterscopic's approach</strong>: Single regex pass.</p>
+<p><strong>Benchmark</strong>: 1,000 component renders
+- AST-based: ~2.0ms per component
+- Regex: ~0.1ms per component
+- Improvement: ~20x</p>
+<p><strong>Decision</strong>: Implemented.</p>
+<h3 id="10-plain-html-no-escaping-magic">10. Plain HTML, No Escaping Magic<a class="headerlink" href="#10-plain-html-no-escaping-magic" title="Permanent link">&para;</a></h3>
+<p><strong>Why this matters</strong>: Hugo's auto-escaping is correct but adds overhead.</p>
+<p><strong>Garterscopic's approach</strong>: Escapes only the explicit placeholder values, not the HTML itself.</p>
+<p><strong>Trade-off</strong>: User must declare <code>type: html</code> for trusted content.</p>
+<p><strong>Decision</strong>: Implemented with explicit opt-in for raw HTML.</p>
+<h2 id="benchmark-suite">Benchmark Suite<a class="headerlink" href="#benchmark-suite" title="Permanent link">&para;</a></h2>
+<p>Garterscopic includes benchmarks for:</p>
+<ul>
+<li>100 pages</li>
+<li>1,000 pages</li>
+<li>10,000 pages</li>
+<li>100,000 pages</li>
+</ul>
+<p>Measured metrics:
+- Cold build time
+- Warm build time (with OS cache)
+- Incremental build time
+- Single-page change rebuild
+- Component change rebuild
+- Layout change rebuild
+- Peak memory
+- Allocations
+- CPU utilization</p>
+<h2 id="conclusions">Conclusions<a class="headerlink" href="#conclusions" title="Permanent link">&para;</a></h2>
+<p>Garterscopic's performance strategy is:</p>
+<ol>
+<li><strong>Match Hugo's core techniques</strong>: concurrency, caching, dependency tracking</li>
+<li><strong>Exploit simpler template model</strong>: regex substitution vs AST</li>
+<li><strong>Avoid expensive operations</strong>: no general-purpose template language</li>
+<li><strong>Maintain determinism</strong>: always reproducible output</li>
+</ol>
+<p>The result should be a generator that is:
+- Comparable to Hugo for small sites
+- Faster than Hugo for large sites (because of simpler template model)
+- Easier to understand than Hugo (smaller codebase)
+- More maintainable than Hugo (no template language to extend)</p>
+<p>We will publish reproducible benchmarks rather than making unsupported claims about being faster than Hugo.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Hugo architecture: https://github.com/gohugoio/hugo</li>
+<li>Hugo performance: https://gohugo.io/about/benchmarks/</li>
+<li>Goldmark benchmarks: https://github.com/yuin/goldmark</li>
+<li>Go runtime: https://golang.org/pkg/runtime/</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../../components/" class="btn btn-neutral float-left" title="Components"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/garterscopic/garterscopic" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../../components/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,23 @@
+site_name: Garterscopic
+site_url: https://garterscopic.example.com
+repo_url: https://github.com/garterscopic/garterscopic
+edit_uri: edit/main/docs/
+docs_dir: docs
+site_dir: site
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Project Structure: project-structure.md
+  - Components: components.md
+  - Architecture:
+      - Performance: architecture/performance.md
+
+theme:
+  name: readthedocs
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true

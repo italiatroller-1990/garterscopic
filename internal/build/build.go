@@ -8,12 +8,13 @@ import (
 	"strings"
 
 	"github.com/garterscopic/garterscopic/internal/assets"
+	"github.com/garterscopic/garterscopic/internal/binding"
 	"github.com/garterscopic/garterscopic/internal/components"
 	"github.com/garterscopic/garterscopic/internal/config"
 	"github.com/garterscopic/garterscopic/internal/layouts"
 	"github.com/garterscopic/garterscopic/internal/markdown"
-	"github.com/garterscopic/garterscopic/internal/pages"
 	"github.com/garterscopic/garterscopic/internal/pagetypes"
+	"github.com/garterscopic/garterscopic/internal/pages"
 	"github.com/garterscopic/garterscopic/internal/renderer"
 	"github.com/garterscopic/garterscopic/internal/routing"
 	"github.com/garterscopic/garterscopic/internal/styles"
@@ -174,54 +175,134 @@ func (b *Builder) renderPage(page pages.Page) (string, error) {
 }
 
 func (b *Builder) renderLayout(layout layouts.Layout, page pages.Page, metadata map[string]any) (string, error) {
-	var parts []string
+	resolver := binding.NewResolver(
+		metadata,
+		binding.PageInfo{
+			Route: page.Route,
+			URL:   page.Route,
+			Type:  page.Type,
+		},
+		binding.SiteInfo{
+			Name:    b.Config.Name,
+			BaseURL: b.Config.BaseURL,
+		},
+	)
 
-	for _, inst := range layout.Components {
-		if inst.Name == "content" {
-			renderedBody, err := markdown.Render(page.Body)
-			if err != nil {
-				return "", fmt.Errorf("failed to render markdown: %w", err)
-			}
-			parts = append(parts, renderedBody)
-			continue
-		}
+	groups := layout.GroupByPosition()
 
-		comp, exists := b.Components[inst.Name]
-		if !exists {
-			continue
-		}
-
-		compHTML, err := components.LoadComponentHTML(b.Config, comp.File)
-		if err != nil {
-			return "", err
-		}
-
-		options := inst.Options
-		if options == nil {
-			options = make(map[string]any)
-		}
-
-		for k, v := range metadata {
-			if _, exists := options[k]; !exists {
-				options[k] = v
-			}
-		}
-
-		rendered, err := b.Renderer.RenderComponentHTML(inst.Name, compHTML, options)
-		if err != nil {
-			return "", fmt.Errorf("failed to render component %s: %w", inst.Name, err)
-		}
-
-		parts = append(parts, rendered)
+	positions := []layouts.Position{
+		layouts.PositionTop,
+		layouts.PositionLeft,
+		layouts.PositionCenter,
+		layouts.PositionRight,
+		layouts.PositionBottom,
 	}
 
-	return strings.Join(parts, "\n"), nil
+	var body strings.Builder
+
+	for _, pos := range positions {
+		instances, ok := groups[pos]
+		if !ok {
+			continue
+		}
+
+		if pos != layouts.PositionCenter {
+			fmt.Fprintf(&body, `<div data-garterscopic-region="%s">`+"\n", pos)
+		}
+
+		for _, inst := range instances {
+			rendered, err := b.renderInstance(inst, page, metadata, resolver)
+			if err != nil {
+				return "", err
+			}
+			body.WriteString(rendered)
+			body.WriteString("\n")
+		}
+
+		if pos != layouts.PositionCenter {
+			body.WriteString(`</div>`)
+			body.WriteString("\n")
+		}
+	}
+
+	return body.String(), nil
+}
+
+func (b *Builder) renderInstance(inst layouts.ComponentInstance, page pages.Page, metadata map[string]any, resolver *binding.Resolver) (string, error) {
+	inst = layouts.NormalizeInstance(inst)
+
+	if inst.Name == "content" {
+		renderedBody, err := markdown.Render(page.Body)
+		if err != nil {
+			return "", fmt.Errorf("failed to render markdown: %w", err)
+		}
+		return renderedBody, nil
+	}
+
+	if inst.Name == "frontmatter-values" {
+		valuesAny, _ := inst.Options["values"].([]any)
+		var result strings.Builder
+		result.WriteString(`<dl class="frontmatter-values">` + "\n")
+		for _, v := range valuesAny {
+			vs, ok := v.(string)
+			if !ok {
+				continue
+			}
+			resolved, err := resolver.Resolve(vs)
+			if err != nil {
+				continue
+			}
+			parts := strings.Split(vs, ".")
+			name := parts[len(parts)-1]
+			fmt.Fprintf(&result, "  <dt>%s</dt><dd>%v</dd>\n", name, resolved)
+		}
+		result.WriteString("</dl>")
+		return result.String(), nil
+	}
+
+	comp, exists := b.Components[inst.Name]
+	if !exists {
+		return "", nil
+	}
+
+	compHTML, err := components.LoadComponentHTML(b.Config, comp.File)
+	if err != nil {
+		return "", err
+	}
+
+	options := inst.Options
+	if options == nil {
+		options = make(map[string]any)
+	}
+
+	options, err = binding.ApplyBindings(options, resolver)
+	if err != nil {
+		return "", err
+	}
+
+	for k, v := range metadata {
+		if _, exists := options[k]; !exists {
+			options[k] = v
+		}
+	}
+
+	rendered, err := b.Renderer.RenderComponentHTML(inst.Name, compHTML, options)
+	if err != nil {
+		return "", fmt.Errorf("failed to render component %s: %w", inst.Name, err)
+	}
+
+	return rendered, nil
 }
 
 func (b *Builder) wrapInDocument(body string, page pages.Page, metadata map[string]any) string {
 	title := ""
 	if t, ok := metadata["title"].(string); ok {
 		title = t
+	}
+
+	description := ""
+	if d, ok := metadata["description"].(string); ok {
+		description = d
 	}
 
 	lang := b.Config.Language
@@ -245,19 +326,25 @@ func (b *Builder) wrapInDocument(body string, page pages.Page, metadata map[stri
 		}
 	}
 
+	metaDescription := ""
+	if description != "" {
+		metaDescription = fmt.Sprintf(`    <meta name="description" content="%s">`, escapeHTML(description))
+	}
+
 	return fmt.Sprintf(`<!doctype html>
 <html lang="%s">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>%s</title>
+%s
     %s
     %s
 </head>
 <body>
 %s
 </body>
-</html>`, lang, escapeHTML(title), stylesTag, strings.Join(scriptsTags, "\n    "), body)
+</html>`, lang, escapeHTML(title), metaDescription, stylesTag, strings.Join(scriptsTags, "\n    "), body)
 }
 
 func (b *Builder) collectUsedStyles() []string {
