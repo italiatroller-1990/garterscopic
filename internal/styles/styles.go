@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/garterscopic/garterscopic/internal/config"
+	"github.com/italiatroller-1990/garterscopic/internal/config"
 )
 
 func CollectStyles(cfg *config.SiteConfig, componentStyles []string, globalStyles []string) ([]string, error) {

@@ -8,7 +8,7 @@ buildGoModule rec {
   version = "{{VERSION}}";
 
   src = fetchFromGitHub {
-    owner = "garterscopic";
+    owner = "italiatroller-1990";
     repo = "garterscopic";
     rev = "v${version}";
     hash = "";
@@ -26,7 +26,7 @@ buildGoModule rec {
       Garterscopic is a simple, fast static site generator that lets you
       build websites using HTML, YAML, Markdown, and CSS - no Node.js required.
     '';
-    homepage = "https://garterscopic.dev";
+    homepage = "https://github.com/italiatroller-1990/garterscopic";
     license = licenses.mit;
     maintainers = with maintainers; [ garterscopic ];
     mainProgram = "garterscopic";

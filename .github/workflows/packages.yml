@@ -16,25 +16,27 @@ on:
 jobs:
   debian-package:
     runs-on: ubuntu-latest
-    container: debian:bookworm
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Install dependencies
         run: |
-          apt-get update
-          apt-get install -y dpkg-dev bash coreutils
+          sudo apt-get update
+          sudo apt-get install -y dpkg-dev
 
-      - name: Download binary
+      - name: Download binary from release
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          curl -sL "https://github.com/garterscopic/garterscopic/releases/download/${VERSION}/garterscopic-linux-amd64" -o garterscopic
+          curl -sL "https://github.com/italiatroller-1990/garterscopic/releases/download/${VERSION}/garterscopic-linux-amd64" -o garterscopic
           chmod +x garterscopic
 
       - name: Build DEB package
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          ./packaging/deb/build.sh
+          VERSION=$VERSION bash ./packaging/deb/build.sh
           ls -la *.deb
 
       - name: Upload DEB package
@@ -44,25 +46,30 @@ jobs:
           path: "*.deb"
           retention-days: 5
 
-  fedora-package:
-    runs-on: fedora:latest
+  rpm-package:
+    runs-on: ubuntu-latest
+    container: fedora:latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Install dependencies
         run: |
-          dnf install -y rpmdevtools rpmlint go
+          dnf install -y rpmdevtools
 
-      - name: Download binary
+      - name: Download binary from release
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          curl -sL "https://github.com/garterscopic/garterscopic/releases/download/${VERSION}/garterscopic-linux-amd64" -o garterscopic
+          dnf install -y curl
+          curl -sL "https://github.com/italiatroller-1990/garterscopic/releases/download/${VERSION}/garterscopic-linux-amd64" -o garterscopic
           chmod +x garterscopic
 
       - name: Build RPM package
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          ./packaging/rpm/build.sh
+          VERSION=$VERSION bash ./packaging/rpm/build.sh
           ls -la *.rpm
 
       - name: Upload RPM package
@@ -76,27 +83,32 @@ jobs:
     runs-on: ubuntu-latest
     container: archlinux:latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Install dependencies
         run: |
-          pacman -Sy --noconfirm base-devel go
+          pacman -Sy --noconfirm base-devel curl
 
-      - name: Download binary
+      - name: Download binary from release
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          curl -sL "https://github.com/garterscopic/garterscopic/releases/download/${VERSION}/garterscopic-linux-amd64" -o garterscopic
+          curl -sL "https://github.com/italiatroller-1990/garterscopic/releases/download/${VERSION}/garterscopic-linux-amd64" -o garterscopic
           chmod +x garterscopic
 
       - name: Build Arch package
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          mkdir -p /tmp/pkgdest
-          cd /tmp/pkgdest
-          cp /home/runner/work/garterscopic/garterscopic/packaging/arch/PKGBUILD .
-          sed -i 's/{{VERSION}}/${{ env.VERSION }}/g' PKGBUILD
-          makepkg --skippgpcheck
+          mkdir -p "$HOME/.cache/garterscopic"
+          cd "$HOME/.cache/garterscopic"
+          cp "$PWD/../../../packaging/arch/PKGBUILD" .
+          sed -i "s/{{VERSION}}/$VERSION/g" PKGBUILD
+          cp "$PWD/../../../garterscopic" .
+          makepkg --skippgpcheck -f
           ls -la *.pkg.tar.zst
+          cp *.pkg.tar.zst "$PWD/../../../"
 
       - name: Upload Arch package
         uses: actions/upload-artifact@v4

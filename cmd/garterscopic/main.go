@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/garterscopic/garterscopic/internal/build"
-	"github.com/garterscopic/garterscopic/internal/config"
-	"github.com/garterscopic/garterscopic/internal/server"
+	"github.com/italiatroller-1990/garterscopic/internal/build"
+	"github.com/italiatroller-1990/garterscopic/internal/config"
+	"github.com/italiatroller-1990/garterscopic/internal/server"
 )
 
 var version = "0.1.0"

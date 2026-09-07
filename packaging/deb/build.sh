@@ -64,7 +64,7 @@ cat > "$PKG_DIR/usr/share/doc/garterscopic/copyright" << EOF
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: garterscopic
 Upstream-Contact: Garterscopic Team
-Source: https://github.com/garterscopic/garterscopic
+Source: https://github.com/italiatroller-1990/garterscopic
 
 Files: *
 Copyright: 2024 Garterscopic Contributors
@@ -74,9 +74,9 @@ EOF
 cat > "$PKG_DIR/usr/share/doc/garterscopic/changelog" << EOF
 garterscopic (${VERSION}) stable; urgency=low
 
-  * See https://github.com/garterscopic/garterscopic/releases
+  * See https://github.com/italiatroller-1990/garterscopic/releases
 
- -- Garterscopic Team <team@garterscopic.dev>  $(date -R)
+  -- Garterscopic Team <italiatroller@protonmail.com>  $(date -R)
 EOF
 gzip -n "$PKG_DIR/usr/share/doc/garterscopic/changelog"
 

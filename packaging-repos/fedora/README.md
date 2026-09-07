@@ -1,6 +1,6 @@
 # Garterscopic Fedora Packages
 
-This repository contains the RPM packages for [Garterscopic](https://github.com/garterscopic/garterscopic) for Fedora, RHEL, and CentOS.
+This repository contains the RPM packages for [Garterscopic](https://github.com/italiatroller-1990/garterscopic) for Fedora, RHEL, and CentOS.
 
 Packages are automatically built and published when new releases are made upstream.
 

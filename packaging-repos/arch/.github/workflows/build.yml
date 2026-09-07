@@ -83,7 +83,7 @@ jobs:
             x86_64) PLATFORM="linux-amd64" ;;
             aarch64) PLATFORM="linux-arm64" ;;
           esac
-          curl -sL "https://github.com/garterscopic/garterscopic/releases/download/${VERSION}/garterscopic-${PLATFORM}" -o garterscopic
+          curl -sL "https://github.com/italiatroller-1990/garterscopic/releases/download/${VERSION}/garterscopic-${PLATFORM}" -o garterscopic
           chmod +x garterscopic
           file garterscopic
 

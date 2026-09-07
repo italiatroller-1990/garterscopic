@@ -24,7 +24,7 @@
           inherit version;
 
           src = pkgs.fetchurl {
-            url = "https://github.com/garterscopic/garterscopic/releases/download/v${version}/${binaryName}";
+            url = "https://github.com/italiatroller-1990/garterscopic/releases/download/v${version}/${binaryName}";
             sha256 = pkgs.lib.fakeSha256;
           };
 
@@ -38,6 +38,7 @@
 
           meta = with pkgs.lib; {
             description = "Declarative Lightweight Static Site Generator";
+            homepage = "https://github.com/italiatroller-1990/garterscopic";
             longDescription = ''
               Garterscopic is a simple, fast static site generator that lets you
               build websites using HTML, YAML, Markdown, and CSS - no Node.js required.

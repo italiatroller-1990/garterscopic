@@ -193,6 +193,12 @@ jobs:
     with:
       version: ${{ needs.release.outputs.version }}
 
+  distro-packages:
+    needs: [release, create-release]
+    uses: ./.github/workflows/packages.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+
   trigger-packaging-repos:
     needs: [release, create-release]
     runs-on: ubuntu-latest

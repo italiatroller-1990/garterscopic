@@ -5,7 +5,7 @@ Version:        %{VERSION}
 Release:        1%{?dist}
 Summary:        Declarative Lightweight Static Site Generator
 License:        MIT
-URL:            https://garterscopic.dev
+URL:            https://github.com/italiatroller-1990/garterscopic
 Source0:        %{url}/archive/v%{version}.tar.gz
 BuildArch:      %{ARCH}
 BuildRequires:  bash
@@ -16,7 +16,7 @@ Garterscopic is a simple, fast static site generator that lets you
 build websites using HTML, YAML, Markdown, and CSS - no Node.js required.
 
 %prep
-%setup -q
+%setup -q -n garterscopic-v%{version}
 
 %build
 CGO_ENABLED=0 go build -ldflags="-s -w" -o garterscopic ./cmd/garterscopic
@@ -50,5 +50,5 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
-* $(date '+%a %b %d %Y') Garterscopic Team <team@garterscopic.dev> - %{version}
-- See https://github.com/garterscopic/garterscopic/releases
+* $(date '+%a %b %d %Y') Garterscopic Team <italiatroller@protonmail.com> - %{version}
+- See https://github.com/italiatroller-1990/garterscopic/releases

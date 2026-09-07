@@ -14,7 +14,7 @@ let
 
     meta = with pkgs.lib; {
       description = "Declarative Lightweight Static Site Generator";
-      homepage = "https://garterscopic.dev";
+      homepage = "https://github.com/italiatroller-1990/garterscopic";
       license = licenses.mit;
       maintainers = with maintainers; [ ];
       mainProgram = "garterscopic";

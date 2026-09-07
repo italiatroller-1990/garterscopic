@@ -3,7 +3,7 @@ package renderer
 import (
 	"testing"
 
-	"github.com/garterscopic/garterscopic/internal/components"
+	"github.com/italiatroller-1990/garterscopic/internal/components"
 )
 
 func TestRenderComponentHTML(t *testing.T) {

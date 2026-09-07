@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/garterscopic/garterscopic/internal/components"
+	"github.com/italiatroller-1990/garterscopic/internal/components"
 )
 
 var placeholderRegex = regexp.MustCompile(`\{\{\s*(\w+)\s*\}\}`)

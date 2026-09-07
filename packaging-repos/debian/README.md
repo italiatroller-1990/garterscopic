@@ -1,6 +1,6 @@
 # Garterscopic Debian Packages
 
-This repository contains the Debian/Ubuntu packages for [Garterscopic](https://github.com/garterscopic/garterscopic).
+This repository contains the Debian/Ubuntu packages for [Garterscopic](https://github.com/italiatroller-1990/garterscopic).
 
 Packages are automatically built and published when new releases are made upstream.
 

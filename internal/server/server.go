@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/garterscopic/garterscopic/internal/build"
-	"github.com/garterscopic/garterscopic/internal/config"
+	"github.com/italiatroller-1990/garterscopic/internal/build"
+	"github.com/italiatroller-1990/garterscopic/internal/config"
 )
 
 type Server struct {

@@ -1,4 +1,4 @@
-module github.com/garterscopic/garterscopic
+module github.com/italiatroller-1990/garterscopic
 
 go 1.21
 

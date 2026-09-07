@@ -5,12 +5,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/garterscopic/garterscopic/internal/components"
-	"github.com/garterscopic/garterscopic/internal/config"
-	"github.com/garterscopic/garterscopic/internal/layouts"
-	"github.com/garterscopic/garterscopic/internal/pages"
-	"github.com/garterscopic/garterscopic/internal/pagetypes"
-	"github.com/garterscopic/garterscopic/internal/routing"
+	"github.com/italiatroller-1990/garterscopic/internal/components"
+	"github.com/italiatroller-1990/garterscopic/internal/config"
+	"github.com/italiatroller-1990/garterscopic/internal/layouts"
+	"github.com/italiatroller-1990/garterscopic/internal/pages"
+	"github.com/italiatroller-1990/garterscopic/internal/pagetypes"
+	"github.com/italiatroller-1990/garterscopic/internal/routing"
 )
 
 type Error struct {

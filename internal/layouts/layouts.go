@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/garterscopic/garterscopic/internal/config"
-	"github.com/garterscopic/garterscopic/internal/yaml"
+	"github.com/italiatroller-1990/garterscopic/internal/config"
+	"github.com/italiatroller-1990/garterscopic/internal/yaml"
 )
 
 type Position string

@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/garterscopic/garterscopic/internal/config"
+	"github.com/italiatroller-1990/garterscopic/internal/config"
 )
 
 func benchmarkSite(b *testing.B, pageCount int) {

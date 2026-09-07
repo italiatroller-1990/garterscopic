@@ -1,6 +1,6 @@
 # Garterscopic Nix Flake
 
-This repository contains the [Nix](https://nixos.org/) flake for [Garterscopic](https://github.com/garterscopic/garterscopic).
+This repository contains the [Nix](https://nixos.org/) flake for [Garterscopic](https://github.com/italiatroller-1990/garterscopic).
 
 ## Usage
 

@@ -1,4 +1,4 @@
-# Maintainer: Garterscopic Team <team@garterscopic.dev>
+# Maintainer: Garterscopic Team <italiatroller@protonmail.com>
 # Contributor: Your Name <your@email>
 
 pkgname=garterscopic
@@ -6,7 +6,7 @@ pkgver={{VERSION}}
 pkgrel=1
 pkgdesc="Declarative Lightweight Static Site Generator"
 arch=('x86_64' 'aarch64')
-url="https://garterscopic.dev"
+url="https://github.com/italiatroller-1990/garterscopic"
 license=('MIT')
 depends=('bash')
 makedepends=('go')

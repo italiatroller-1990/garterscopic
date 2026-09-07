@@ -63,7 +63,7 @@ jobs:
         run: |
           VERSION=${{ steps.version.outputs.version }}
           PLATFORM="linux-${{ matrix.arch }}"
-          curl -sL "https://github.com/garterscopic/garterscopic/releases/download/${VERSION}/garterscopic-${PLATFORM}" -o garterscopic
+          curl -sL "https://github.com/italiatroller-1990/garterscopic/releases/download/${VERSION}/garterscopic-${PLATFORM}" -o garterscopic
           chmod +x garterscopic
 
       - name: Build package
