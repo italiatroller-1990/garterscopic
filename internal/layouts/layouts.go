@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/italiatroller-1990/garterscopic/internal/config"
 	"github.com/italiatroller-1990/garterscopic/internal/yaml"
@@ -144,13 +145,14 @@ func resolveLayout(name string, raw map[string]rawLayout, resolved map[string]La
 	}
 
 	if r.Inherit != "" {
+		parentName := strings.TrimSuffix(r.Inherit, ".yaml")
 		visiting[name] = true
-		if err := resolveLayout(r.Inherit, raw, resolved, visiting); err != nil {
+		if err := resolveLayout(parentName, raw, resolved, visiting); err != nil {
 			return err
 		}
 		delete(visiting, name)
 
-		parent, ok := resolved[r.Inherit]
+		parent, ok := resolved[parentName]
 		if !ok {
 			return fmt.Errorf("parent layout '%s' not found for '%s'", r.Inherit, name)
 		}
