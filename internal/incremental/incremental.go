@@ -20,18 +20,18 @@ type FileHash struct {
 }
 
 type PageState struct {
-	Route       string    `json:"route"`
-	SourcePath  string    `json:"source_path"`
-	OutputPath  string    `json:"output_path"`
-	Hashes      []FileHash `json:"hashes"`
-	BuiltAt     int64     `json:"built_at"`
+	Route      string     `json:"route"`
+	SourcePath string     `json:"source_path"`
+	OutputPath string     `json:"output_path"`
+	Hashes     []FileHash `json:"hashes"`
+	BuiltAt    int64      `json:"built_at"`
 }
 
 type BuildCache struct {
-	Version   int                  `json:"version"`
+	Version   int                   `json:"version"`
 	Pages     map[string]*PageState `json:"pages"`
-	Global    []FileHash           `json:"global"`
-	CreatedAt int64                `json:"created_at"`
+	Global    []FileHash            `json:"global"`
+	CreatedAt int64                 `json:"created_at"`
 }
 
 type Tracker struct {

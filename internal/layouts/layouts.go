@@ -28,9 +28,9 @@ func ValidPosition(p Position) bool {
 }
 
 type ComponentInstance struct {
-	Name     string                 `yaml:"name"`
-	Options  map[string]any         `yaml:"options"`
-	Position Position               `yaml:"position"`
+	Name     string         `yaml:"name"`
+	Options  map[string]any `yaml:"options"`
+	Position Position       `yaml:"position"`
 }
 
 func (c *ComponentInstance) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -61,9 +61,9 @@ func (c *ComponentInstance) UnmarshalYAML(unmarshal func(interface{}) error) err
 }
 
 type Layout struct {
-	Name       string                 `yaml:"name"`
-	Components []ComponentInstance    `yaml:"components"`
-	Inherit    string                 `yaml:"inherit"`
+	Name       string              `yaml:"name"`
+	Components []ComponentInstance `yaml:"components"`
+	Inherit    string              `yaml:"inherit"`
 }
 
 type rawLayout struct {

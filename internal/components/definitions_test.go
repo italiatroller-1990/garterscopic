@@ -93,8 +93,8 @@ func TestNormalizeComponentName(t *testing.T) {
 
 func TestIsValidPosition(t *testing.T) {
 	tests := []struct {
-		position  string
-		isValid   bool
+		position string
+		isValid  bool
 	}{
 		{"top", true},
 		{"bottom", true},
@@ -181,7 +181,7 @@ func TestValidateUnknownOptions(t *testing.T) {
 
 func TestValidatePosition(t *testing.T) {
 	def := Definition{
-		Name: "test",
+		Name:    "test",
 		Options: map[string]OptionDefinition{},
 	}
 

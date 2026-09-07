@@ -6,7 +6,7 @@ func TestResolveFrontmatter(t *testing.T) {
 	resolver := NewResolver(
 		map[string]any{
 			"title": "Hello",
-			"tags": []any{"a", "b"},
+			"tags":  []any{"a", "b"},
 		},
 		PageInfo{},
 		SiteInfo{},
