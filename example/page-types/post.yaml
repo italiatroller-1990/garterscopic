@@ -1,0 +1,22 @@
+name: post
+
+layout: default
+
+fields:
+  title:
+    type: string
+    required: true
+
+  date:
+    type: date
+    required: true
+
+  tags:
+    type: list
+
+  author:
+    type: string
+
+  draft:
+    type: boolean
+    default: false

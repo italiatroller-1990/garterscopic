@@ -1,0 +1,10 @@
+.footer {
+    background: #333;
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.footer-copyright {
+    margin: 0;
+}

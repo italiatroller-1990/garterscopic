@@ -1,0 +1,15 @@
+name: page
+
+layout: default
+
+fields:
+  title:
+    type: string
+    required: true
+
+  description:
+    type: string
+
+  draft:
+    type: boolean
+    default: false

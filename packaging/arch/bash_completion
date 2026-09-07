@@ -1,0 +1,22 @@
+_garterscopic()
+{
+    local cur prev words cword
+    _init_completion || return
+
+    case $prev in
+        --help|--version)
+            return
+            ;;
+        --port)
+            return
+            ;;
+        init|new)
+            COMPREPLY=($(compgen -W "page post" -- "$cur"))
+            return
+            ;;
+    esac
+
+    if [[ $cword -eq 1 ]]; then
+        COMPREPLY=($(compgen -W "init build dev clean new --help --version" -- "$cur"))
+    fi
+} && complete -F _garterscopic garterscopic

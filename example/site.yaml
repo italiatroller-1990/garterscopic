@@ -1,0 +1,16 @@
+name: Example
+base_url: http://localhost:8080
+
+build:
+  source: .
+  output: dist
+
+default_layout: default
+default_page_type: page
+
+assets:
+  directory: assets
+
+styles:
+  global:
+    - styles/global.css

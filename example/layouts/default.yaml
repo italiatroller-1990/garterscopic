@@ -1,0 +1,13 @@
+name: default
+
+components:
+  - name: navbar
+    options:
+      logo: My Site
+      links: "Home,About,Contact"
+
+  - name: content
+
+  - name: footer
+    options:
+      copyright: "2024"

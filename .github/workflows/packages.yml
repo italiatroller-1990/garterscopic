@@ -1,0 +1,106 @@
+name: Distro Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.0.0)'
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+
+jobs:
+  debian-package:
+    runs-on: ubuntu-latest
+    container: debian:bookworm
+    steps:
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y dpkg-dev bash coreutils
+
+      - name: Download binary
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          curl -sL "https://github.com/garterscopic/garterscopic/releases/download/${VERSION}/garterscopic-linux-amd64" -o garterscopic
+          chmod +x garterscopic
+
+      - name: Build DEB package
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          ./packaging/deb/build.sh
+          ls -la *.deb
+
+      - name: Upload DEB package
+        uses: actions/upload-artifact@v4
+        with:
+          name: garterscopic-debian-package
+          path: "*.deb"
+          retention-days: 5
+
+  fedora-package:
+    runs-on: fedora:latest
+    steps:
+      - name: Install dependencies
+        run: |
+          dnf install -y rpmdevtools rpmlint go
+
+      - name: Download binary
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          curl -sL "https://github.com/garterscopic/garterscopic/releases/download/${VERSION}/garterscopic-linux-amd64" -o garterscopic
+          chmod +x garterscopic
+
+      - name: Build RPM package
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          ./packaging/rpm/build.sh
+          ls -la *.rpm
+
+      - name: Upload RPM package
+        uses: actions/upload-artifact@v4
+        with:
+          name: garterscopic-rpm-package
+          path: "*.rpm"
+          retention-days: 5
+
+  arch-package:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Install dependencies
+        run: |
+          pacman -Sy --noconfirm base-devel go
+
+      - name: Download binary
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          curl -sL "https://github.com/garterscopic/garterscopic/releases/download/${VERSION}/garterscopic-linux-amd64" -o garterscopic
+          chmod +x garterscopic
+
+      - name: Build Arch package
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          mkdir -p /tmp/pkgdest
+          cd /tmp/pkgdest
+          cp /home/runner/work/garterscopic/garterscopic/packaging/arch/PKGBUILD .
+          sed -i 's/{{VERSION}}/${{ env.VERSION }}/g' PKGBUILD
+          makepkg --skippgpcheck
+          ls -la *.pkg.tar.zst
+
+      - name: Upload Arch package
+        uses: actions/upload-artifact@v4
+        with:
+          name: garterscopic-arch-package
+          path: "*.pkg.tar.zst"
+          retention-days: 5

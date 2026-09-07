@@ -1,0 +1,28 @@
+components:
+  navbar:
+    file: navbar.html
+    style: styles/navbar.css
+    options:
+      logo:
+        type: string
+      links:
+        type: list
+
+  hero:
+    file: hero.html
+    style: styles/hero.css
+    options:
+      title:
+        type: string
+        required: true
+      subtitle:
+        type: string
+      button:
+        type: object
+
+  footer:
+    file: footer.html
+    style: styles/footer.css
+    options:
+      copyright:
+        type: string

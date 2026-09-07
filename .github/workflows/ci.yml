@@ -1,0 +1,164 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: true
+
+      - name: Check formatting
+        run: |
+          go fmt ./...
+          git diff --exit-code
+
+      - name: Vet code
+        run: go vet ./...
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run unit tests
+        run: go test -v -race ./...
+
+      - name: Build binary
+        run: CGO_ENABLED=0 go build -o garterscopic ./cmd/garterscopic
+
+      - name: Verify binary executes
+        run: |
+          ./garterscopic --version
+          ./garterscopic --help
+
+      - name: Integration test - init project
+        run: |
+          rm -rf /tmp/test-garterscopic
+          ./garterscopic init /tmp/test-garterscopic
+
+      - name: Integration test - build project
+        run: |
+          cd /tmp/test-garterscopic
+          ../garterscopic build
+          test -f dist/index.html
+
+      - name: Integration test - create page
+        run: |
+          cd /tmp/test-garterscopic
+          ../garterscopic new page contact
+          test -f pages/contact.md
+
+      - name: Integration test - create post
+        run: |
+          cd /tmp/test-garterscopic
+          ../garterscopic new post hello
+          test -f pages/posts/hello.md
+
+      - name: Integration test - clean
+        run: |
+          cd /tmp/test-garterscopic
+          ../garterscopic clean
+          test ! -d dist
+
+  build-matrix:
+    needs: ci
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - os: linux
+            arch: amd64
+            artifact: garterscopic-linux-amd64
+          - os: linux
+            arch: arm64
+            artifact: garterscopic-linux-arm64
+          - os: darwin
+            arch: amd64
+            artifact: garterscopic-darwin-amd64
+          - os: darwin
+            arch: arm64
+            artifact: garterscopic-darwin-arm64
+          - os: freebsd
+            arch: amd64
+            artifact: garterscopic-freebsd-amd64
+          - os: freebsd
+            arch: arm64
+            artifact: garterscopic-freebsd-arm64
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: true
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Build ${{ matrix.target.artifact }}
+        env:
+          GOOS: ${{ matrix.target.os }}
+          GOARCH: ${{ matrix.target.arch }}
+          CGO_ENABLED: 0
+        run: |
+          go build -ldflags="-s -w" -o ${{ matrix.target.artifact }} ./cmd/garterscopic
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target.artifact }}
+          path: ${{ matrix.target.artifact }}
+          retention-days: 5
+
+  integration-tests:
+    needs: build-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - artifact: garterscopic-linux-amd64
+            os: linux
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+
+      - name: Make executable
+        run: chmod +x ${{ matrix.artifact }}
+
+      - name: Verify binary
+        run: |
+          mv ${{ matrix.artifact }} garterscopic
+          ./garterscopic --version
+          ./garterscopic --help
+
+      - name: Test full workflow
+        run: |
+          rm -rf /tmp/garterscopic-test
+          ./garterscopic init /tmp/garterscopic-test
+          cd /tmp/garterscopic-test
+          ../garterscopic build
+          test -f dist/index.html
+          test -f dist/about/index.html
+          test -f dist/styles.css
+          test -f dist/assets/js/main.js

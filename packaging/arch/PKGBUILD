@@ -1,0 +1,31 @@
+# Maintainer: Garterscopic Team <team@garterscopic.dev>
+# Contributor: Your Name <your@email>
+
+pkgname=garterscopic
+pkgver={{VERSION}}
+pkgrel=1
+pkgdesc="Declarative Lightweight Static Site Generator"
+arch=('x86_64' 'aarch64')
+url="https://garterscopic.dev"
+license=('MIT')
+depends=('bash')
+makedepends=('go')
+provides=("garterscopic")
+conflicts=('garterscopic')
+source=("$pkgname-$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+    cd "$pkgname-$pkgver"
+    CGO_ENABLED=0 go build -ldflags="-s -w" -o garterscopic ./cmd/garterscopic
+}
+
+package() {
+    cd "$pkgname-$pkgver"
+    install -Dm755 garterscopic "$pkgdir/usr/bin/garterscopic"
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+
+    install -Dm644 packaging/arch/bash_completion "$pkgdir/usr/share/bash-completion/completions/garterscopic"
+    install -Dm644 packaging/arch/zsh_completion "$pkgdir/usr/share/zsh/site-functions/_garterscopic"
+}

@@ -1,0 +1,36 @@
+#compdef garterscopic
+
+_garterscopic()
+{
+    local -a commands
+
+    commands=(
+        'init:Create a new project'
+        'build:Build the site'
+        'dev:Start development server'
+        'clean:Remove generated files'
+        'new:Create a new page'
+        '--help:Show help'
+        '--version:Show version'
+    )
+
+    _arguments -C \
+        '1: :->command' \
+        '2: :->arg' \
+        '*-p:port:'
+
+    case $state in
+        command)
+            _describe 'command' commands
+            ;;
+        arg)
+            case $words[1] in
+                new)
+                    _describe 'type' '(page post)'
+                    ;;
+            esac
+            ;;
+    esac
+}
+
+_garterscopic "$@"
