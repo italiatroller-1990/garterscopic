@@ -10,10 +10,11 @@ import (
 )
 
 type Definition struct {
-	Name    string                      `yaml:"name"`
-	File    string                      `yaml:"file"`
-	Style   string                      `yaml:"style"`
-	Options map[string]OptionDefinition `yaml:"options"`
+	Name     string                      `yaml:"name"`
+	File     string                      `yaml:"file"`
+	Style    string                      `yaml:"style"`
+	Position string                      `yaml:"position"`
+	Options  map[string]OptionDefinition `yaml:"options"`
 }
 
 type OptionDefinition struct {
@@ -22,19 +23,26 @@ type OptionDefinition struct {
 	Default  any    `yaml:"default"`
 }
 
+type OptionBinding struct {
+	From string `yaml:"from"`
+}
+
 type Definitions struct {
 	Components map[string]ComponentDef `yaml:"components"`
 }
 
 type ComponentDef struct {
-	File    string                      `yaml:"file"`
-	Style   string                      `yaml:"style"`
-	Options map[string]OptionDefinition `yaml:"options"`
+	File     string                      `yaml:"file"`
+	Style    string                      `yaml:"style"`
+	Position string                      `yaml:"position"`
+	Options  map[string]OptionDefinition `yaml:"options"`
 }
 
 type Instance struct {
-	Name    string         `yaml:"name"`
-	Options map[string]any `yaml:"options"`
+	Name     string                   `yaml:"name"`
+	Options  map[string]any           `yaml:"options"`
+	Position string                   `yaml:"position"`
+	Bindings map[string]OptionBinding `yaml:"bindings"`
 }
 
 func LoadDefinitions(cfg *config.SiteConfig) (map[string]Definition, error) {
@@ -52,10 +60,11 @@ func LoadDefinitions(cfg *config.SiteConfig) (map[string]Definition, error) {
 	result := make(map[string]Definition)
 	for name, comp := range defs.Components {
 		result[name] = Definition{
-			Name:    name,
-			File:    comp.File,
-			Style:   comp.Style,
-			Options: comp.Options,
+			Name:     name,
+			File:     comp.File,
+			Style:    comp.Style,
+			Position: comp.Position,
+			Options:  comp.Options,
 		}
 	}
 
@@ -65,11 +74,26 @@ func LoadDefinitions(cfg *config.SiteConfig) (map[string]Definition, error) {
 func (d *Definition) ValidateOptions(instance Instance) []error {
 	var errs []error
 
+	// Validate position if provided
+	if instance.Position != "" {
+		if !IsValidPosition(instance.Position) {
+			errs = append(errs, fmt.Errorf("component '%s': invalid position '%s' (must be: top, bottom, left, right, center)", d.Name, instance.Position))
+		}
+	}
+
+	// Check for unknown options
+	for name := range instance.Options {
+		if _, exists := d.Options[name]; !exists {
+			errs = append(errs, fmt.Errorf("component '%s': unknown option '%s'", d.Name, name))
+		}
+	}
+
+	// Validate declared options
 	for name, optDef := range d.Options {
 		val, exists := instance.Options[name]
 
 		if optDef.Required && !exists {
-			errs = append(errs, fmt.Errorf("required option '%s' is missing", name))
+			errs = append(errs, fmt.Errorf("component '%s': required option '%s' is missing (expected type: %s)", d.Name, name, optDef.Type))
 			continue
 		}
 
@@ -77,7 +101,7 @@ func (d *Definition) ValidateOptions(instance Instance) []error {
 			continue
 		}
 
-		if err := validateType(val, optDef.Type, name); err != nil {
+		if err := validateType(val, optDef.Type, d.Name, name); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -85,40 +109,59 @@ func (d *Definition) ValidateOptions(instance Instance) []error {
 	return errs
 }
 
-func validateType(val any, expectedType, fieldName string) error {
+func (d *Definition) ResolvePosition(instance Instance) string {
+	// Resolution order: instance position -> component definition default -> center
+	if instance.Position != "" && IsValidPosition(instance.Position) {
+		return instance.Position
+	}
+	if d.Position != "" && IsValidPosition(d.Position) {
+		return d.Position
+	}
+	return "center"
+}
+
+func IsValidPosition(pos string) bool {
+	switch strings.ToLower(pos) {
+	case "top", "bottom", "left", "right", "center":
+		return true
+	}
+	return false
+}
+
+func validateType(val any, expectedType, componentName, fieldName string) error {
 	switch expectedType {
 	case "string":
 		if _, ok := val.(string); !ok {
 			if _, ok := val.(int); ok {
-				return nil
+				return nil // Allow coercion from int to string
 			}
-			return fmt.Errorf("option '%s' must be a string, got %T", fieldName, val)
+			return fmt.Errorf("component '%s', option '%s': expected string, got %T", componentName, fieldName, val)
 		}
 	case "number":
 		switch val.(type) {
 		case int, int32, int64, float32, float64:
 		default:
-			return fmt.Errorf("option '%s' must be a number, got %T", fieldName, val)
+			return fmt.Errorf("component '%s', option '%s': expected number, got %T", componentName, fieldName, val)
 		}
 	case "boolean":
 		if _, ok := val.(bool); !ok {
-			return fmt.Errorf("option '%s' must be a boolean, got %T", fieldName, val)
+			return fmt.Errorf("component '%s', option '%s': expected boolean, got %T", componentName, fieldName, val)
 		}
 	case "list":
 		if _, ok := val.([]any); !ok {
-			return fmt.Errorf("option '%s' must be a list, got %T", fieldName, val)
+			return fmt.Errorf("component '%s', option '%s': expected list, got %T", componentName, fieldName, val)
 		}
 	case "object":
 		if _, ok := val.(map[string]any); !ok {
-			return fmt.Errorf("option '%s' must be an object, got %T", fieldName, val)
+			return fmt.Errorf("component '%s', option '%s': expected object, got %T", componentName, fieldName, val)
 		}
 	case "date":
 		if _, ok := val.(string); !ok {
-			return fmt.Errorf("option '%s' must be a date string, got %T", fieldName, val)
+			return fmt.Errorf("component '%s', option '%s': expected date string, got %T", componentName, fieldName, val)
 		}
 	case "html":
 		if _, ok := val.(string); !ok {
-			return fmt.Errorf("option '%s' must be a string for html type, got %T", fieldName, val)
+			return fmt.Errorf("component '%s', option '%s': expected string for html type, got %T", componentName, fieldName, val)
 		}
 	}
 	return nil
