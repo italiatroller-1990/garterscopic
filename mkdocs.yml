@@ -14,10 +14,18 @@ nav:
       - Performance: architecture/performance.md
 
 theme:
-  name: readthedocs
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - toc.integrate
+    - content.code.copy
 
 markdown_extensions:
   - admonition
   - codehilite
   - toc:
       permalink: true
+  - attr_list
+  - pymdownx.highlight
+  - pymdownx.superfences
