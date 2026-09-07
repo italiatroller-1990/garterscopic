@@ -56,25 +56,25 @@ jobs:
       - name: Integration test - build project
         run: |
           cd /tmp/test-garterscopic
-          ../garterscopic build
+          ${{ github.workspace }}/garterscopic build
           test -f dist/index.html
 
       - name: Integration test - create page
         run: |
           cd /tmp/test-garterscopic
-          ../garterscopic new page contact
+          ${{ github.workspace }}/garterscopic new page contact
           test -f pages/contact.md
 
       - name: Integration test - create post
         run: |
           cd /tmp/test-garterscopic
-          ../garterscopic new post hello
+          ${{ github.workspace }}/garterscopic new post hello
           test -f pages/posts/hello.md
 
       - name: Integration test - clean
         run: |
           cd /tmp/test-garterscopic
-          ../garterscopic clean
+          ${{ github.workspace }}/garterscopic clean
           test ! -d dist
 
   build-matrix:
@@ -157,7 +157,7 @@ jobs:
           rm -rf /tmp/garterscopic-test
           ./garterscopic init /tmp/garterscopic-test
           cd /tmp/garterscopic-test
-          ../garterscopic build
+          ${{ github.workspace }}/garterscopic build
           test -f dist/index.html
           test -f dist/about/index.html
           test -f dist/styles.css
