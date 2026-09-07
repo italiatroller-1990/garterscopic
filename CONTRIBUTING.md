@@ -11,7 +11,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/garterscopic/garterscopic
+git clone https://github.com/italiatroller-1990/garterscopic
 cd garterscopic
 
 # Build (no CGO required)

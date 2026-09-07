@@ -42,16 +42,16 @@ Windows users may compile Garterscopic from source themselves.
 
 ### Official Binaries
 
-Download from the [latest release](https://github.com/garterscopic/garterscopic/releases/latest):
+Download from the [latest release](https://github.com/italiatroller-1990/garterscopic/releases/latest):
 
 ```bash
 # Linux amd64
-curl -sL https://github.com/garterscopic/garterscopic/releases/latest/download/garterscopic-linux-amd64 -o garterscopic
+curl -sL https://github.com/italiatroller-1990/garterscopic/releases/latest/download/garterscopic-linux-amd64 -o garterscopic
 chmod +x garterscopic
 sudo mv garterscopic /usr/local/bin/
 
 # macOS arm64 (Apple Silicon)
-curl -sL https://github.com/garterscopic/garterscopic/releases/latest/download/garterscopic-darwin-arm64 -o garterscopic
+curl -sL https://github.com/italiatroller-1990/garterscopic/releases/latest/download/garterscopic-darwin-arm64 -o garterscopic
 chmod +x garterscopic
 sudo mv garterscopic /usr/local/bin/
 ```
@@ -78,7 +78,7 @@ Packages for Debian, Fedora, and Arch Linux are built automatically via GitHub A
 ### Source Build
 
 ```bash
-git clone https://github.com/garterscopic/garterscopic
+git clone https://github.com/italiatroller-1990/garterscopic
 cd garterscopic
 CGO_ENABLED=0 go build -o garterscopic ./cmd/garterscopic
 ```
@@ -169,7 +169,7 @@ JavaScript is completely optional. Place files in `assets/js/` and they copy to 
 
 ```bash
 # Clone and build
-git clone https://github.com/garterscopic/garterscopic
+git clone https://github.com/italiatroller-1990/garterscopic
 cd garterscopic
 CGO_ENABLED=0 go build -o garterscopic ./cmd/garterscopic
 
