@@ -1,0 +1,18 @@
+Source: garterscopic
+Section: web
+Priority: optional
+Maintainer: Garterscopic Team <italiatroller@protonmail.com>
+Homepage: https://github.com/italiatroller-1990/garterscopic
+Build-Depends: debhelper-compat (= 13), golang-any
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+
+Package: garterscopic
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Declarative Lightweight Static Site Generator
+ Garterscopic is a simple, fast static site generator that lets you
+ build websites using HTML, YAML, Markdown, and CSS - no Node.js required.
+ .
+ Features include HTML components, YAML configuration, Markdown content,
+ atomic builds, and a built-in development server.

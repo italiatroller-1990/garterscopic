@@ -25,26 +25,22 @@ Package: garterscopic
 Version: ${VERSION}
 Section: web
 Priority: optional
-Maintainer: Garterscopic Team
+Maintainer: Garterscopic Team <italiatroller@protonmail.com>
+Homepage: https://github.com/italiatroller-1990/garterscopic
 Description: Declarative Lightweight Static Site Generator
  Garterscopic is a simple, fast static site generator that lets you
  build websites using HTML, YAML, Markdown, and CSS - no Node.js required.
 Architecture: ${ARCH}
 Depends: bash (>= 4.0)
-EOF
-
-cat > "$PKG_DIR/DEBIAN/conffiles" << EOF
-/etc/garterscopic/config.yaml
+License: Apache-2.0
 EOF
 
 cat > "$PKG_DIR/DEBIAN/postinst" << 'POSTINST'
 #!/bin/bash
+set -e
 if [ "$1" = "configure" ]; then
     if [ -x /usr/bin/update-alternatives ]; then
-        update-alternatives --install /usr/bin/garterscopic garterscopic /usr/local/bin/garterscopic 100
-    fi
-    if [ -d /usr/share/bash-completion ]; then
-        cp /usr/share/doc/garterscopic/completions/bash/* /usr/share/bash-completion/completions/ 2>/dev/null || true
+        update-alternatives --install /usr/bin/garterscopic garterscopic /usr/local/bin/garterscopic 100 2>/dev/null || true
     fi
 fi
 POSTINST
@@ -52,6 +48,7 @@ chmod +x "$PKG_DIR/DEBIAN/postinst"
 
 cat > "$PKG_DIR/DEBIAN/prerm" << 'PRERM'
 #!/bin/bash
+set -e
 if [ "$1" = "remove" ]; then
     if [ -x /usr/bin/update-alternatives ]; then
         update-alternatives --remove garterscopic /usr/local/bin/garterscopic 2>/dev/null || true
@@ -63,12 +60,25 @@ chmod +x "$PKG_DIR/DEBIAN/prerm"
 cat > "$PKG_DIR/usr/share/doc/garterscopic/copyright" << EOF
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: garterscopic
-Upstream-Contact: Garterscopic Team
+Upstream-Contact: Garterscopic Team <italiatroller@protonmail.com>
 Source: https://github.com/italiatroller-1990/garterscopic
 
 Files: *
-Copyright: 2024 Garterscopic Contributors
-License: MIT
+Copyright: 2024-2026 Garterscopic Contributors
+License: Apache-2.0
+
+License: Apache-2.0
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ .
+     http://www.apache.org/licenses/LICENSE-2.0
+ .
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
 EOF
 
 cat > "$PKG_DIR/usr/share/doc/garterscopic/changelog" << EOF

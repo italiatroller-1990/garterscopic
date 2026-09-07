@@ -10,6 +10,9 @@ if [ -z "$VERSION" ]; then
     exit 1
 fi
 
+# Strip leading v if present
+VERSION="${VERSION#v}"
+
 TEMP_DIR=$(mktemp -d)
 trap "rm -rf $TEMP_DIR" EXIT
 
@@ -32,19 +35,23 @@ case "$ARCH" in
         ;;
 esac
 
+# Prepare sources
+cp "$OUTPUT/garterscopic" "$TEMP_DIR/rpmbuild/"
+cp LICENSE README.md "$TEMP_DIR/rpmbuild/"
+cp -r packaging "$TEMP_DIR/rpmbuild/packaging"
+
+# Create spec file from template
 SPEC_FILE="$TEMP_DIR/rpmbuild/SPECS/garterscopic.spec"
-sed "s/%{VERSION}/$VERSION/g; s/%{ARCH}/$ARCH_MAP/g" \
+sed "s/%{_version}/$VERSION/g; s/%{_arch}/$ARCH_MAP/g" \
     "$(dirname "$0")/garterscopic.spec" > "$SPEC_FILE"
 
-cp "$OUTPUT/garterscopic" "$TEMP_DIR/rpmbuild/"
-cp -r "$(dirname "$0")/../.." "$TEMP_DIR/rpmbuild/BUILD/garterscopic-$VERSION" 2>/dev/null || true
-
 rpmbuild --define "_topdir $TEMP_DIR/rpmbuild" \
+    --define "_version $VERSION" \
+    --define "_arch $ARCH_MAP" \
     --define "dist ." \
     --target "$ARCH_MAP-linux" \
-    -ba "$SPEC_FILE"
+    -bb "$SPEC_FILE"
 
 find "$TEMP_DIR/rpmbuild/RPMS" -name "*.rpm" -exec cp -v {} "$OUTPUT/" \;
-find "$TEMP_DIR/rpmbuild/SRPMS" -name "*.rpm" -exec cp -v {} "$OUTPUT/" \;
 
 echo "Created RPM packages in $OUTPUT"

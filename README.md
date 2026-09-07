@@ -50,6 +50,16 @@ curl -sL https://github.com/italiatroller-1990/garterscopic/releases/latest/down
 chmod +x garterscopic
 sudo mv garterscopic /usr/local/bin/
 
+# Linux arm64
+curl -sL https://github.com/italiatroller-1990/garterscopic/releases/latest/download/garterscopic-linux-arm64 -o garterscopic
+chmod +x garterscopic
+sudo mv garterscopic /usr/local/bin/
+
+# macOS amd64 (Intel)
+curl -sL https://github.com/italiatroller-1990/garterscopic/releases/latest/download/garterscopic-darwin-amd64 -o garterscopic
+chmod +x garterscopic
+sudo mv garterscopic /usr/local/bin/
+
 # macOS arm64 (Apple Silicon)
 curl -sL https://github.com/italiatroller-1990/garterscopic/releases/latest/download/garterscopic-darwin-arm64 -o garterscopic
 chmod +x garterscopic
@@ -60,20 +70,49 @@ sudo mv garterscopic /usr/local/bin/
 
 ```bash
 garterscopic --version
-gartersopcic --help
+garterscopic --help
 ```
 
 ### Package Managers
+
+**Go:**
+
+```bash
+go install github.com/italiatroller-1990/garterscopic/cmd/garterscopic@latest
+```
+
+**Fedora / RHEL / Rocky / AlmaLinux:**
+
+```bash
+# Download the RPM from GitHub Releases
+sudo dnf install ./garterscopic-<version>-1.x86_64.rpm
+```
+
+**Debian / Ubuntu:**
+
+```bash
+# Download the DEB from GitHub Releases
+sudo apt install ./garterscopic_<version>_amd64.deb
+```
+
+**Arch Linux:**
+
+```bash
+# Using makepkg from the AUR or GitHub Releases
+makepkg -si garterscopic-<version>-1-x86_64.pkg.tar.zst
+```
+
+**Nix:**
+
+```bash
+nix run github:italiatroller-1990/garterscopic
+```
 
 **Homebrew (macOS/Linux):**
 
 ```bash
 brew install garterscopic/tap/garterscopic
 ```
-
-**Linux (various):**
-
-Packages for Debian, Fedora, and Arch Linux are built automatically via GitHub Actions.
 
 ### Source Build
 
@@ -190,12 +229,39 @@ git push origin v1.0.0
 ```
 
 The workflow will:
-1. Run CI tests
-2. Build binaries for all platforms
+1. Run CI tests (formatting, vet, unit tests, integration tests)
+2. Build binaries for all platforms (Linux, macOS, FreeBSD)
 3. Generate checksums
-4. Create GitHub release
-5. Build distro packages (deb, rpm, arch)
+4. Create GitHub release with binaries and source archive
+5. Build distro packages (DEB, RPM, Arch, Nix)
+6. Attest build provenance
+7. Notify external packaging repos (Debian, Fedora, Arch, Nix)
+
+### Supported Distributions
+
+| Distribution | Package Type | Architectures |
+|-------------|-------------|---------------|
+| Fedora 38+ | RPM | x86_64, aarch64 |
+| RHEL 8+ / Rocky / Alma | RPM | x86_64, aarch64 |
+| openSUSE Tumbleweed | RPM | x86_64, aarch64 |
+| Debian 12+ | DEB | amd64, arm64 |
+| Ubuntu 22.04+ | DEB | amd64, arm64 |
+| Arch Linux | PKG | x86_64, aarch64 |
+| NixOS | Flake | x86_64, aarch64 |
+
+### Go Requirements
+
+- Go 1.21+
+- `CGO_ENABLED=0` (no cgo required)
+
+### How to Download Artifacts
+
+GitHub Actions artifacts are available on the [Actions tab](https://github.com/italiatroller-1990/garterscopic/actions). Click on a workflow run to download build artifacts.
+
+### How to Download Releases
+
+Visit the [Releases page](https://github.com/italiatroller-1990/garterscopic/releases) to download binaries and packages.
 
 ## License
 
-MIT
+Apache-2.0

@@ -41,7 +41,13 @@ jobs:
         run: go test -v -race ./...
 
       - name: Build binary
-        run: CGO_ENABLED=0 go build -o garterscopic ./cmd/garterscopic
+        run: |
+          VERSION="0.0.0-dev"
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+            VERSION="${VERSION#v}"
+          fi
+          CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X main.version=${VERSION}" -o garterscopic ./cmd/garterscopic
 
       - name: Verify binary executes
         run: |

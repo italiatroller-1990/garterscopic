@@ -11,34 +11,11 @@ permissions:
   attestations: write
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Extract version
-        id: version
-        run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
-      - name: Verify tag matches version pattern
-        run: |
-          if ! echo '${{ steps.version.outputs.version }}' | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
-            echo "Invalid version tag format"
-            exit 1
-          fi
-
-      - name: Run full CI
-        uses: ./.github/workflows/ci.yml
-        with:
-          skip-artifacts: true
+  ci:
+    uses: ./.github/workflows/ci.yml
 
   build:
-    needs: release
+    needs: ci
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -81,7 +58,9 @@ jobs:
           GOARCH: ${{ matrix.target.arch }}
           CGO_ENABLED: 0
         run: |
-          go build -ldflags="-s -w" -o ${{ matrix.target.artifact }} ./cmd/garterscopic
+          VERSION="${GITHUB_REF#refs/tags/}"
+          go build -trimpath -ldflags="-s -w -X main.version=${VERSION#v}" \
+            -o ${{ matrix.target.artifact }} ./cmd/garterscopic
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -89,8 +68,28 @@ jobs:
           name: ${{ matrix.target.artifact }}
           path: ${{ matrix.target.artifact }}
 
+  source-archive:
+    needs: ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create source archive
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/}"
+          ARCHIVE="garterscopic-${VERSION}-src.tar.gz"
+          git archive --format=tar.gz --prefix="garterscopic-${VERSION}/" -o "$ARCHIVE" HEAD
+          echo "ARCHIVE=$ARCHIVE" >> $GITHUB_ENV
+
+      - name: Upload source archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: garterscopic-source
+          path: ${{ env.ARCHIVE }}
+
   checksums:
-    needs: build
+    needs: [build, source-archive]
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
@@ -98,13 +97,10 @@ jobs:
         with:
           path: artifacts
 
-      - name: List artifacts
-        run: ls -la artifacts/
-
       - name: Generate checksums
         working-directory: artifacts
         run: |
-          sha256sum * > SHA256SUMS
+          find . -type f -not -name 'SHA256SUMS' -not -name '.git*' | sort | xargs sha256sum > SHA256SUMS
           cat SHA256SUMS
 
       - name: Upload checksums
@@ -114,28 +110,31 @@ jobs:
           path: artifacts/SHA256SUMS
 
   create-release:
-    needs: [release, checksums]
+    needs: [ci, checksums]
     runs-on: ubuntu-latest
     outputs:
-      release_id: ${{ steps.create_release.outputs.id }}
+      version: ${{ steps.version.outputs.version }}
     steps:
+      - name: Extract version
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
           merge-multiple: true
 
-      - name: Prepare files
+      - name: Prepare release files
         run: |
-          chmod +x garterscopic-*
+          chmod +x garterscopic-* 2>/dev/null || true
           ls -la
 
       - name: Create release
-        id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.release.outputs.version }}
-          name: Garterscopic ${{ needs.release.outputs.version }}
+          tag_name: ${{ steps.version.outputs.version }}
+          name: Garterscopic ${{ steps.version.outputs.version }}
           draft: false
           prerelease: false
           files: |
@@ -143,6 +142,8 @@ jobs:
             SHA256SUMS
           body: |
             ## Downloads
+
+            ### Binaries
 
             | Platform | Architecture | File |
             |----------|--------------|------|
@@ -153,9 +154,34 @@ jobs:
             | FreeBSD | amd64 | `garterscopic-freebsd-amd64` |
             | FreeBSD | arm64 | `garterscopic-freebsd-arm64` |
 
-            ## Verification
+            ### Packages
 
-            Check the `SHA256SUMS` file for checksums.
+            | Distribution | Package | File |
+|--------------|---------|------|
+            | Fedora/RHEL | RPM | See [distro packages workflow](../../actions/workflows/packages.yml) |
+            | openSUSE | RPM | See [distro packages workflow](../../actions/workflows/packages.yml) |
+            | Debian | DEB | See [distro packages workflow](../../actions/workflows/packages.yml) |
+            | Ubuntu | DEB | See [distro packages workflow](../../actions/workflows/packages.yml) |
+            | Arch Linux | PKG | See [distro packages workflow](../../actions/workflows/packages.yml) |
+            | Nix | Flake | See [packaging/nix/flake.nix](../blob/main/packaging/nix/flake.nix) |
+
+            ### Go
+
+            ```bash
+            go install github.com/italiatroller-1990/garterscopic/cmd/garterscopic@${{ steps.version.outputs.version }}
+            ```
+
+            ### Source
+
+            Download `garterscopic-${{ steps.version.outputs.version }}-src.tar.gz` or use:
+
+            ```bash
+            git clone --branch ${{ steps.version.outputs.version }} https://github.com/italiatroller-1990/garterscopic
+            cd garterscopic
+            CGO_ENABLED=0 go build -o garterscopic ./cmd/garterscopic
+            ```
+
+            ## Verification
 
             ```bash
             sha256sum -c SHA256SUMS
@@ -165,13 +191,13 @@ jobs:
 
             1. Download the binary for your platform
             2. Make it executable: `chmod +x garterscopic-<platform>-<arch>`
-            3. Move it to your PATH: `mv garterscopic-* /usr/local/bin/garterscopic`
-            4. Run: `garterscopic --help`
+            3. Move it to your PATH: `sudo mv garterscopic-* /usr/local/bin/garterscopic`
+            4. Verify: `garterscopic --version`
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   attest:
-    needs: [release, create-release]
+    needs: [ci, create-release]
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
@@ -188,19 +214,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   distro-packages:
-    needs: [release, create-release]
+    needs: [ci, create-release]
     uses: ./.github/workflows/packages.yml
     with:
-      version: ${{ needs.release.outputs.version }}
-
-  distro-packages:
-    needs: [release, create-release]
-    uses: ./.github/workflows/packages.yml
-    with:
-      version: ${{ needs.release.outputs.version }}
+      version: ${{ needs.create-release.outputs.version }}
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
 
   trigger-packaging-repos:
-    needs: [release, create-release]
+    needs: [ci, create-release]
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Debian packaging repo
@@ -209,7 +233,7 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: token ${{ secrets.PACKAGING_DISPATCH_TOKEN }}" \
             https://api.github.com/repos/italiatroller-1990/garterscopic-debian/dispatches \
-            -d "{\"event_type\": \"garterscopic-released\", \"client_payload\": {\"version\": \"${{ needs.release.outputs.version }}\", \"url\": \"https://github.com/italiatroller-1990/garterscopic/releases/tag/${{ needs.release.outputs.version }}\"}}"
+            -d "{\"event_type\": \"garterscopic-released\", \"client_payload\": {\"version\": \"${{ needs.create-release.outputs.version }}\", \"url\": \"https://github.com/italiatroller-1990/garterscopic/releases/tag/${{ needs.create-release.outputs.version }}\"}}"
 
       - name: Trigger Fedora packaging repo
         run: |
@@ -217,7 +241,7 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: token ${{ secrets.PACKAGING_DISPATCH_TOKEN }}" \
             https://api.github.com/repos/italiatroller-1990/garterscopic-fedora/dispatches \
-            -d "{\"event_type\": \"garterscopic-released\", \"client_payload\": {\"version\": \"${{ needs.release.outputs.version }}\", \"url\": \"https://github.com/italiatroller-1990/garterscopic/releases/tag/${{ needs.release.outputs.version }}\"}}"
+            -d "{\"event_type\": \"garterscopic-released\", \"client_payload\": {\"version\": \"${{ needs.create-release.outputs.version }}\", \"url\": \"https://github.com/italiatroller-1990/garterscopic/releases/tag/${{ needs.create-release.outputs.version }}\"}}"
 
       - name: Trigger Arch packaging repo
         run: |
@@ -225,7 +249,7 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: token ${{ secrets.PACKAGING_DISPATCH_TOKEN }}" \
             https://api.github.com/repos/italiatroller-1990/garterscopic-arch/dispatches \
-            -d "{\"event_type\": \"garterscopic-released\", \"client_payload\": {\"version\": \"${{ needs.release.outputs.version }}\", \"url\": \"https://github.com/italiatroller-1990/garterscopic/releases/tag/${{ needs.release.outputs.version }}\"}}"
+            -d "{\"event_type\": \"garterscopic-released\", \"client_payload\": {\"version\": \"${{ needs.create-release.outputs.version }}\", \"url\": \"https://github.com/italiatroller-1990/garterscopic/releases/tag/${{ needs.create-release.outputs.version }}\"}}"
 
       - name: Trigger Nix flake update
         run: |
@@ -233,7 +257,7 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: token ${{ secrets.PACKAGING_DISPATCH_TOKEN }}" \
             https://api.github.com/repos/italiatroller-1990/garterscopic-nix/dispatches \
-            -d "{\"event_type\": \"garterscopic-released\", \"client_payload\": {\"version\": \"${{ needs.release.outputs.version }}\", \"url\": \"https://github.com/italiatroller-1990/garterscopic/releases/tag/${{ needs.release.outputs.version }}\"}}"
+            -d "{\"event_type\": \"garterscopic-released\", \"client_payload\": {\"version\": \"${{ needs.create-release.outputs.version }}\", \"url\": \"https://github.com/italiatroller-1990/garterscopic/releases/tag/${{ needs.create-release.outputs.version }}\"}}"
 
       - name: Done
-        run: echo "All packaging repos notified for ${{ needs.release.outputs.version }}"
+        run: echo "All packaging repos notified for ${{ needs.create-release.outputs.version }}"

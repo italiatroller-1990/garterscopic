@@ -1,0 +1,19 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE = 1
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o garterscopic ./cmd/garterscopic
+
+override_dh_install:
+	install -Dm755 garterscopic $(CURDIR)/debian/garterscopic/usr/bin/garterscopic
+
+override_dh_auto_test:
+	@echo "Skipping tests during package build"
+
+override_dh_shlibdeps:
+	dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info

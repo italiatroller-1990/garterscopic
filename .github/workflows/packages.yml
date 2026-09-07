@@ -13,6 +13,9 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   debian-package:
     runs-on: ubuntu-latest
@@ -35,18 +38,65 @@ jobs:
       - name: Build DEB package
         env:
           VERSION: ${{ inputs.version }}
+          ARCH: amd64
         run: |
-          VERSION=$VERSION bash ./packaging/deb/build.sh
+          VERSION=$VERSION ARCH=$ARCH bash ./packaging/deb/build.sh
           ls -la *.deb
 
-      - name: Upload DEB package
+      - name: Validate DEB package
+        run: |
+          dpkg-deb --info *.deb
+          dpkg-deb --contents *.deb
+
+      - name: Upload Debian DEB package
         uses: actions/upload-artifact@v4
         with:
-          name: garterscopic-debian-package
+          name: garterscopic-debian-deb
           path: "*.deb"
           retention-days: 5
 
-  rpm-package:
+  ubuntu-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y dpkg-dev
+
+      - name: Download binary from release
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          curl -sL "https://github.com/italiatroller-1990/garterscopic/releases/download/${VERSION}/garterscopic-linux-amd64" -o garterscopic
+          chmod +x garterscopic
+
+      - name: Build Ubuntu DEB package
+        env:
+          VERSION: ${{ inputs.version }}
+          ARCH: amd64
+          OUTPUT: .
+        run: |
+          VERSION=$VERSION ARCH=$ARCH OUTPUT=. bash ./packaging/deb/build.sh
+          # Rename to distinguish from Debian package
+          mv garterscopic_${VERSION}_${ARCH}.deb garterscopic_${VERSION}_${ARCH}-ubuntu.deb
+          ls -la *.deb
+
+      - name: Validate Ubuntu DEB package
+        run: |
+          dpkg-deb --info *.deb
+          dpkg-deb --contents *.deb
+
+      - name: Upload Ubuntu DEB package
+        uses: actions/upload-artifact@v4
+        with:
+          name: garterscopic-ubuntu-deb
+          path: "*-ubuntu.deb"
+          retention-days: 5
+
+  fedora-rpm:
     runs-on: ubuntu-latest
     container: fedora:latest
     steps:
@@ -55,28 +105,77 @@ jobs:
 
       - name: Install dependencies
         run: |
-          dnf install -y rpmdevtools
+          dnf install -y rpm-build rpmdevtools curl
 
       - name: Download binary from release
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          dnf install -y curl
           curl -sL "https://github.com/italiatroller-1990/garterscopic/releases/download/${VERSION}/garterscopic-linux-amd64" -o garterscopic
           chmod +x garterscopic
 
       - name: Build RPM package
         env:
           VERSION: ${{ inputs.version }}
+          ARCH: x86_64
+          OUTPUT: .
         run: |
-          VERSION=$VERSION bash ./packaging/rpm/build.sh
+          VERSION=$VERSION ARCH=$ARCH OUTPUT=. bash ./packaging/rpm/build.sh
           ls -la *.rpm
 
-      - name: Upload RPM package
+      - name: Validate RPM package
+        run: |
+          rpm -qip *.rpm
+          rpm -qlp *.rpm
+
+      - name: Upload Fedora RPM package
         uses: actions/upload-artifact@v4
         with:
-          name: garterscopic-rpm-package
+          name: garterscopic-fedora-rpm
           path: "*.rpm"
+          retention-days: 5
+
+  opensuse-rpm:
+    runs-on: ubuntu-latest
+    container: opensuse/tumbleweed:latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          zypper --non-interactive install rpm-build rpmdevtools curl
+
+      - name: Download binary from release
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          curl -sL "https://github.com/italiatroller-1990/garterscopic/releases/download/${VERSION}/garterscopic-linux-amd64" -o garterscopic
+          chmod +x garterscopic
+
+      - name: Build openSUSE RPM package
+        env:
+          VERSION: ${{ inputs.version }}
+          ARCH: x86_64
+          OUTPUT: .
+        run: |
+          VERSION=$VERSION ARCH=$ARCH OUTPUT=. bash ./packaging/rpm/build.sh
+          # Rename to distinguish from Fedora package
+          for f in *.rpm; do
+            mv "$f" "${f%.rpm}-opensuse.rpm"
+          done
+          ls -la *.rpm
+
+      - name: Validate openSUSE RPM package
+        run: |
+          rpm -qip *.rpm
+          rpm -qlp *.rpm
+
+      - name: Upload openSUSE RPM package
+        uses: actions/upload-artifact@v4
+        with:
+          name: garterscopic-opensuse-rpm
+          path: "*-opensuse.rpm"
           retention-days: 5
 
   arch-package:
@@ -101,18 +200,73 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          mkdir -p "$HOME/.cache/garterscopic"
-          cd "$HOME/.cache/garterscopic"
-          cp "$PWD/../../../packaging/arch/PKGBUILD" .
-          sed -i "s/{{VERSION}}/$VERSION/g" PKGBUILD
-          cp "$PWD/../../../garterscopic" .
-          makepkg --skippgpcheck -f
-          ls -la *.pkg.tar.zst
-          cp *.pkg.tar.zst "$PWD/../../../"
+          # Create a minimal PKGBUILD that installs the pre-built binary
+          TEMP_DIR=$(mktemp -d)
+          cat > "$TEMP_DIR/PKGBUILD" << 'EOF'
+          # Maintainer: Garterscopic Team <italiatroller@protonmail.com>
+
+          pkgname=garterscopic
+          pkgver=${VERSION}
+          pkgrel=1
+          pkgdesc="Declarative Lightweight Static Site Generator"
+          arch=('x86_64')
+          url="https://github.com/italiatroller-1990/garterscopic"
+          license=('Apache-2.0')
+          provides=("garterscopic")
+          conflicts=('garterscopic')
+
+          package() {
+              install -Dm755 garterscopic "$pkgdir/usr/bin/garterscopic"
+              install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+              install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+              install -Dm644 packaging/arch/bash_completion "$pkgdir/usr/share/bash-completion/completions/garterscopic"
+              install -Dm644 packaging/arch/zsh_completion "$pkgdir/usr/share/zsh/site-functions/_garterscopic"
+          }
+          EOF
+          sed -i "s/\${VERSION}/$VERSION/g" "$TEMP_DIR/PKGBUILD"
+
+          cd "$TEMP_DIR"
+          cp "$GITHUB_WORKSPACE/garterscopic" .
+          cp "$GITHUB_WORKSPACE/LICENSE" .
+          cp "$GITHUB_WORKSPACE/README.md" .
+          cp -r "$GITHUB_WORKSPACE/packaging" .
+          makepkg --skippgpcheck --nocheck -f
+          cp *.pkg.tar.zst "$GITHUB_WORKSPACE/"
 
       - name: Upload Arch package
         uses: actions/upload-artifact@v4
         with:
           name: garterscopic-arch-package
           path: "*.pkg.tar.zst"
+          retention-days: 5
+
+  nix-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v27
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Build Nix package
+        run: |
+          nix build ./packaging/nix#packages.x86_64-linux.default
+          ls -la result/bin/
+
+      - name: Prepare Nix artifact
+        run: |
+          VERSION="${{ inputs.version }}"
+          mkdir -p "nix-package"
+          cp -rL result/bin/* "nix-package/"
+          tar czf "garterscopic-${VERSION}-nix.tar.gz" -C result/bin .
+          echo "ARCHIVE=garterscopic-${VERSION}-nix.tar.gz" >> $GITHUB_ENV
+
+      - name: Upload Nix package
+        uses: actions/upload-artifact@v4
+        with:
+          name: garterscopic-nix-package
+          path: ${{ env.ARCHIVE }}
           retention-days: 5

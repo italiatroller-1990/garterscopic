@@ -11,12 +11,18 @@ buildGoModule rec {
     owner = "italiatroller-1990";
     repo = "garterscopic";
     rev = "v${version}";
-    hash = "";
+    hash = "";  # To be filled by nix-build or nix-update
   };
 
-  vendorHash = "";
+  vendorHash = null;
 
   CGO_ENABLED = 0;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X" "main.version=${version}"
+  ];
 
   doCheck = false;
 
@@ -27,8 +33,8 @@ buildGoModule rec {
       build websites using HTML, YAML, Markdown, and CSS - no Node.js required.
     '';
     homepage = "https://github.com/italiatroller-1990/garterscopic";
-    license = licenses.mit;
-    maintainers = with maintainers; [ garterscopic ];
+    license = licenses.asl20;
+    maintainers = with maintainers; [ ];
     mainProgram = "garterscopic";
     platforms = platforms.linux ++ platforms.darwin ++ platforms.freebsd;
   };
