@@ -93,12 +93,18 @@ func (b *Builder) Build() (*BuildResult, error) {
 
 	defer os.RemoveAll(tmpDir)
 
+	usedStyles := b.collectUsedStyles()
+	combinedCSS, err := styles.LoadStyles(usedStyles, b.Config.Build.Source)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load styles: %w", err)
+	}
+
 	sort.Slice(b.Pages, func(i, j int) bool {
 		return b.Pages[i].Route < b.Pages[j].Route
 	})
 
 	for _, page := range b.Pages {
-		html, err := b.renderPage(page)
+		html, err := b.renderPage(page, len(combinedCSS) > 0)
 		if err != nil {
 			return nil, fmt.Errorf("failed to render page %s: %w", page.SourcePath, err)
 		}
@@ -113,12 +119,6 @@ func (b *Builder) Build() (*BuildResult, error) {
 		}
 
 		result.PagesGenerated++
-	}
-
-	usedStyles := b.collectUsedStyles()
-	combinedCSS, err := styles.LoadStyles(usedStyles, b.Config.Build.Source)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load styles: %w", err)
 	}
 
 	cssPath := filepath.Join(tmpDir, "styles.css")
@@ -148,7 +148,7 @@ func (b *Builder) Build() (*BuildResult, error) {
 	return result, nil
 }
 
-func (b *Builder) renderPage(page pages.Page) (string, error) {
+func (b *Builder) renderPage(page pages.Page, hasStyles bool) (string, error) {
 	pageType, exists := b.PageTypes[page.Type]
 	if !exists {
 		pageType = pagetypes.PageType{Name: page.Type}
@@ -171,7 +171,7 @@ func (b *Builder) renderPage(page pages.Page) (string, error) {
 		return "", err
 	}
 
-	return b.wrapInDocument(htmlBody, page, metadata), nil
+	return b.wrapInDocument(htmlBody, page, metadata, hasStyles), nil
 }
 
 func (b *Builder) renderLayout(layout layouts.Layout, page pages.Page, metadata map[string]any) (string, error) {
@@ -294,7 +294,7 @@ func (b *Builder) renderInstance(inst layouts.ComponentInstance, page pages.Page
 	return rendered, nil
 }
 
-func (b *Builder) wrapInDocument(body string, page pages.Page, metadata map[string]any) string {
+func (b *Builder) wrapInDocument(body string, page pages.Page, metadata map[string]any, hasStyles bool) string {
 	title := ""
 	if t, ok := metadata["title"].(string); ok {
 		title = t
@@ -313,7 +313,7 @@ func (b *Builder) wrapInDocument(body string, page pages.Page, metadata map[stri
 	scripts := b.collectScripts()
 
 	var stylesTag string
-	if _, err := os.Stat(filepath.Join(b.Config.Build.Output, "styles.css")); err == nil {
+	if hasStyles {
 		stylesTag = `<link rel="stylesheet" href="/styles.css">`
 	}
 

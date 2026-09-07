@@ -10,6 +10,7 @@ nav:
   - Getting Started: getting-started.md
   - Project Structure: project-structure.md
   - Components: components.md
+  - Packaging and Releases: packaging.md
   - Architecture:
       - Performance: architecture/performance.md
 

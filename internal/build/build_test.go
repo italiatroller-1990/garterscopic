@@ -3,7 +3,10 @@ package build
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+
+	"github.com/italiatroller-1990/garterscopic/internal/config"
 )
 
 func TestBuildSite(t *testing.T) {
@@ -14,6 +17,42 @@ func TestBuildSite(t *testing.T) {
 	defer os.RemoveAll(tmpdir)
 
 	createTestSite(t, tmpdir)
+
+	workingDir, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chdir(tmpdir); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Chdir(workingDir)
+
+	cfg, err := config.Load("site.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	builder := New(cfg)
+	if err := builder.Load(); err != nil {
+		t.Fatal(err)
+	}
+	if buildErr := builder.Validate(); buildErr != nil {
+		t.Fatal(buildErr)
+	}
+	if _, err := builder.Build(); err != nil {
+		t.Fatal(err)
+	}
+
+	index, err := os.ReadFile(filepath.Join(tmpdir, "dist", "index.html"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(index), `<link rel="stylesheet" href="/styles.css">`) {
+		t.Error("expected generated HTML to link styles.css")
+	}
+	if _, err := os.Stat(filepath.Join(tmpdir, "dist", "styles.css")); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestAtomicBuild(t *testing.T) {
@@ -46,13 +85,13 @@ default_page_type: page
 	os.WriteFile(filepath.Join(tmpdir, "components", "definitions.yaml"), []byte(`components:
   navbar:
     file: navbar.html
-    style: navbar.css
+    style: styles/navbar.css
     options:
       logo:
         type: string
   footer:
     file: footer.html
-    style: footer.css
+    style: styles/footer.css
 `), 0644)
 
 	os.WriteFile(filepath.Join(tmpdir, "components", "navbar.html"), []byte(`<nav class="navbar">{{ logo }}</nav>`), 0644)

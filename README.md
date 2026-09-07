@@ -229,13 +229,14 @@ git push origin v1.0.0
 ```
 
 The workflow will:
-1. Run CI tests (formatting, vet, unit tests, integration tests)
+1. Run CI tests (formatting, vet, unit tests, race tests, and integration tests)
 2. Build binaries for all platforms (Linux, macOS, FreeBSD)
-3. Generate checksums
+3. Generate SHA-256 checksums
 4. Create GitHub release with binaries and source archive
-5. Build distro packages (DEB, RPM, Arch, Nix)
-6. Attest build provenance
-7. Notify external packaging repos (Debian, Fedora, Arch, Nix)
+5. Build distro packages (DEB, RPM, Arch, Nix) as GitHub Actions artifacts
+6. Attach the package artifacts and package checksums to the GitHub release
+7. Attest binary build provenance
+8. Notify external packaging repos (Debian, Fedora, Arch, Nix)
 
 ### Supported Distributions
 
@@ -254,9 +255,11 @@ The workflow will:
 - Go 1.21+
 - `CGO_ENABLED=0` (no cgo required)
 
-### How to Download Artifacts
+### How to Download Actions Artifacts
 
-GitHub Actions artifacts are available on the [Actions tab](https://github.com/italiatroller-1990/garterscopic/actions). Click on a workflow run to download build artifacts.
+Pull request and branch builds expose short-lived verification artifacts on the [Actions tab](https://github.com/italiatroller-1990/garterscopic/actions). Release binaries and packages are attached to the release itself and should be downloaded from the [Releases page](https://github.com/italiatroller-1990/garterscopic/releases).
+
+See [Packaging and Releases](docs/packaging.md) for the tag workflow, checksum verification, required secrets, and local package checks.
 
 ### How to Download Releases
 

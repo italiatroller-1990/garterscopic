@@ -157,7 +157,7 @@ jobs:
             ### Packages
 
             | Distribution | Package | File |
-|--------------|---------|------|
+            |--------------|---------|------|
             | Fedora/RHEL | RPM | See [distro packages workflow](../../actions/workflows/packages.yml) |
             | openSUSE | RPM | See [distro packages workflow](../../actions/workflows/packages.yml) |
             | Debian | DEB | See [distro packages workflow](../../actions/workflows/packages.yml) |
@@ -223,8 +223,33 @@ jobs:
       id-token: write
       attestations: write
 
+  publish-packages:
+    needs: [create-release, distro-packages]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download package artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: packages
+          pattern: garterscopic-*-*
+          merge-multiple: true
+
+      - name: Generate package checksums
+        working-directory: packages
+        run: |
+          find . -type f -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Upload packages to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ needs.create-release.outputs.version }}
+        run: gh release upload "$RELEASE_TAG" packages/* --clobber
+
   trigger-packaging-repos:
-    needs: [ci, create-release]
+    needs: [ci, create-release, publish-packages]
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Debian packaging repo

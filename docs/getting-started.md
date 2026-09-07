@@ -17,7 +17,7 @@ No Node.js required. No npm. No proprietary template language.
 
 ```bash
 # Install (when available)
-go install github.com/italiatroller-1990/garterscopic@latest
+go install github.com/italiatroller-1990/garterscopic/cmd/garterscopic@latest
 
 # Create a new project
 garterscopic init my-site
