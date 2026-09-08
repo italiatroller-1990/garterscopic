@@ -277,6 +277,42 @@ fields:
     default: false
 `,
 
+		"page-types/post.yaml": `name: post
+
+layout: default
+
+fields:
+  title:
+    type: string
+    required: true
+
+  description:
+    type: string
+
+  date:
+    type: date
+    required: true
+
+  updated:
+    type: date
+
+  author:
+    type: string
+
+  tags:
+    type: list
+
+  section:
+    type: string
+
+  slug:
+    type: string
+
+  draft:
+    type: boolean
+    default: false
+`,
+
 		"pages/index.md": `---
 type: page
 title: Welcome

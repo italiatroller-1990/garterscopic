@@ -16,12 +16,13 @@ site/
 │   └── page.yaml
 ├── pages/                 # Required: Content pages
 │   ├── index.md
-│   ├── about.md
-│   ├── posts/
+│   └── about.md
+├── posts/                 # Optional: Blog posts
+│   ├── blog/
 │   │   ├── first-post.md
 │   │   └── second-post.md
-│   └── docs/
-│       └── index.md
+│   └── guides/
+│       └── getting-started.md
 ├── styles/                # Optional: CSS stylesheets
 │   ├── global.css
 │   ├── navbar.css
@@ -50,6 +51,9 @@ YAML files that define validation rules and defaults for different page types.
 ### `pages/`
 Markdown files with YAML frontmatter. The filesystem structure maps to URL routes.
 
+### `posts/`
+Blog post content. Supports sections (e.g., `posts/blog/`, `posts/guides/`). Created with `garterscopic new post`.
+
 ### `styles/`
 CSS stylesheets. Can be global or component-specific.
 
@@ -62,8 +66,8 @@ Static files (images, fonts, JavaScript). Copied verbatim to the output.
 |-------------|---------------|
 | `pages/index.md` | `/` |
 | `pages/about.md` | `/about/` |
-| `pages/posts/hello.md` | `/posts/hello/` |
-| `pages/docs/index.md` | `/docs/` |
+| `posts/blog/hello.md` | `/posts/blog/hello/` |
+| `posts/guides/getting-started.md` | `/posts/guides/getting-started/` |
 
 ## No Magic
 
