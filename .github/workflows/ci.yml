@@ -83,7 +83,7 @@ jobs:
         run: |
           cd /tmp/test-garterscopic
           ${{ github.workspace }}/garterscopic new post hello
-          test -f pages/posts/hello.md
+          test -f posts/hello.md
 
       - name: Integration test - clean
         run: |
@@ -120,13 +120,9 @@ jobs:
             arch: amd64
             artifact: garterscopic-freebsd-amd64
 
-          - os: windows
-            arch: amd64
-            artifact: garterscopic-windows-amd64.exe
-
-          - os: windows
+          - os: freebsd
             arch: arm64
-            artifact: garterscopic-windows-arm64.exe
+            artifact: garterscopic-freebsd-arm64
 
     steps:
       - name: Checkout code
