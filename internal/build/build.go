@@ -383,8 +383,12 @@ func (b *Builder) wrapInDocument(body string, page pages.Page, metadata map[stri
 	}
 
 	var faviconTag string
+	iconFile := b.Config.Icon
 	if b.Config.Favicon != "" {
-		faviconTag = fmt.Sprintf(`<link rel="icon" href="/%s/%s">`, b.Config.Icon, b.Config.Favicon)
+		iconFile = b.Config.Favicon
+	}
+	if iconFile != "" {
+		faviconTag = fmt.Sprintf(`<link rel="icon" href="/%s/%s">`, b.Config.IconDir, iconFile)
 	}
 
 	// Generate SEO meta tags

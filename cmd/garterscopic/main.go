@@ -207,7 +207,8 @@ links:
     url: /about/
 
 favicon: favicon.png
-icon: assets/icon
+icon: icon.png
+icon_dir: assets/icon
 `, strings.Title(name)),
 
 		"components/definitions.yaml": `components:
