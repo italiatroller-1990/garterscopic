@@ -160,6 +160,7 @@ my-site/
 ├── layouts/               # Page layouts
 ├── page-types/            # Page schemas
 ├── pages/                 # Markdown content
+├── posts/                 # Blog posts (optional)
 ├── styles/                # CSS
 └── assets/                # Static files
 ```

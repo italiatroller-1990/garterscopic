@@ -204,7 +204,7 @@ styles:
       logo:
         type: string
       links:
-        type: list
+        type: links
 
   hero:
     file: hero.html
@@ -251,7 +251,11 @@ components:
   - name: navbar
     options:
       logo: My Site
-      links: "Home,About,Contact"
+      links:
+        - name: Home
+          url: /
+        - name: About
+          url: /about/
 
   - name: content
 

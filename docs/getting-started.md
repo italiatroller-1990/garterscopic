@@ -42,10 +42,14 @@ my-site/
 ├── layouts/               # Page layouts
 │   └── default.yaml
 ├── page-types/            # Page type definitions
-│   └── page.yaml
+│   ├── page.yaml
+│   └── post.yaml
 ├── pages/                 # Markdown content
 │   ├── index.md
 │   └── about.md
+├── posts/                 # Blog posts (optional)
+│   └── blog/
+│       └── hello.md
 ├── styles/                # CSS stylesheets
 │   └── global.css
 └── assets/                # Static assets
