@@ -194,6 +194,17 @@ assets:
 styles:
   global:
     - styles/global.css
+
+responsive:
+  mobile: "768px"
+  tablet: "1024px"
+  desktop: "1200px"
+
+links:
+  - name: Home
+    url: /
+  - name: About
+    url: /about/
 `, strings.Title(name)),
 
 		"components/definitions.yaml": `components:
@@ -251,11 +262,8 @@ components:
   - name: navbar
     options:
       logo: My Site
-      links:
-        - name: Home
-          url: /
-        - name: About
-          url: /about/
+      from:
+        links: site.links
 
   - name: content
 

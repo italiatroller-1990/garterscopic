@@ -19,8 +19,17 @@ type PageInfo struct {
 }
 
 type SiteInfo struct {
-	Name    string
-	BaseURL string
+	Name         string
+	BaseURL      string
+	MobileWidth  string
+	TabletWidth  string
+	DesktopWidth string
+	Links        []LinkConfig
+}
+
+type LinkConfig struct {
+	Name string
+	URL  string
 }
 
 type ContentInfo struct {
@@ -117,6 +126,18 @@ func (r *Resolver) resolveSite(field string) (any, error) {
 		return r.site.Name, nil
 	case "base_url":
 		return r.site.BaseURL, nil
+	case "mobile_width":
+		return r.site.MobileWidth, nil
+	case "tablet_width":
+		return r.site.TabletWidth, nil
+	case "desktop_width":
+		return r.site.DesktopWidth, nil
+	case "links":
+		result := make([]any, len(r.site.Links))
+		for i, l := range r.site.Links {
+			result[i] = map[string]any{"name": l.Name, "url": l.URL}
+		}
+		return result, nil
 	default:
 		return nil, fmt.Errorf("unknown site field '%s'", field)
 	}

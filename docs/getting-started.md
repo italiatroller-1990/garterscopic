@@ -57,6 +57,42 @@ my-site/
         └── main.js
 ```
 
+## Site Configuration
+
+`site.yaml` defines your site's settings:
+
+```yaml
+name: My Site
+base_url: http://localhost:8080
+
+build:
+  source: .
+  output: dist
+
+default_layout: default
+default_page_type: page
+
+assets:
+  directory: assets
+
+styles:
+  global:
+    - styles/global.css
+
+responsive:
+  mobile: "768px"
+  tablet: "1024px"
+  desktop: "1200px"
+
+links:
+  - name: Home
+    url: /
+  - name: About
+    url: /about/
+```
+
+Links defined in `site.yaml` are available as `site.links` bindings in layouts.
+
 ## Creating Pages
 
 ```markdown

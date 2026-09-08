@@ -8,16 +8,29 @@ import (
 )
 
 type SiteConfig struct {
-	Name            string         `yaml:"name"`
-	BaseURL         string         `yaml:"base_url"`
-	Build           BuildConfig    `yaml:"build"`
-	DefaultLayout   string         `yaml:"default_layout"`
-	DefaultPageType string         `yaml:"default_page_type"`
-	Assets          AssetsConfig   `yaml:"assets"`
-	Styles          StylesConfig   `yaml:"styles"`
-	Scripts         []ScriptConfig `yaml:"scripts"`
-	Language        string         `yaml:"language"`
-	SEO             SEOConfig      `yaml:"seo"`
+	Name            string           `yaml:"name"`
+	BaseURL         string           `yaml:"base_url"`
+	Build           BuildConfig      `yaml:"build"`
+	DefaultLayout   string           `yaml:"default_layout"`
+	DefaultPageType string           `yaml:"default_page_type"`
+	Assets          AssetsConfig     `yaml:"assets"`
+	Styles          StylesConfig     `yaml:"styles"`
+	Scripts         []ScriptConfig   `yaml:"scripts"`
+	Responsive      ResponsiveConfig `yaml:"responsive"`
+	Links           []LinkConfig     `yaml:"links"`
+	Language        string           `yaml:"language"`
+	SEO             SEOConfig        `yaml:"seo"`
+}
+
+type ResponsiveConfig struct {
+	Mobile  string `yaml:"mobile"`
+	Tablet  string `yaml:"tablet"`
+	Desktop string `yaml:"desktop"`
+}
+
+type LinkConfig struct {
+	Name string `yaml:"name"`
+	URL  string `yaml:"url"`
 }
 
 type SEOConfig struct {
@@ -85,6 +98,15 @@ func setDefaults(cfg *SiteConfig) {
 	}
 	if cfg.SEO.RobotsFile == "" {
 		cfg.SEO.RobotsFile = "robots.txt"
+	}
+	if cfg.Responsive.Mobile == "" {
+		cfg.Responsive.Mobile = "768px"
+	}
+	if cfg.Responsive.Tablet == "" {
+		cfg.Responsive.Tablet = "1024px"
+	}
+	if cfg.Responsive.Desktop == "" {
+		cfg.Responsive.Desktop = "1200px"
 	}
 }
 

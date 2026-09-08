@@ -244,8 +244,12 @@ func (b *Builder) renderLayout(layout layouts.Layout, page pages.Page, metadata 
 			Type:  page.Type,
 		},
 		binding.SiteInfo{
-			Name:    b.Config.Name,
-			BaseURL: b.Config.BaseURL,
+			Name:         b.Config.Name,
+			BaseURL:      b.Config.BaseURL,
+			MobileWidth:  b.Config.Responsive.Mobile,
+			TabletWidth:  b.Config.Responsive.Tablet,
+			DesktopWidth: b.Config.Responsive.Desktop,
+			Links:        convertLinks(b.Config.Links),
 		},
 		contentInfo,
 	)
@@ -596,4 +600,12 @@ func escapeHTML(s string) string {
 	s = strings.ReplaceAll(s, `"`, "&quot;")
 	s = strings.ReplaceAll(s, `'`, "&#39;")
 	return s
+}
+
+func convertLinks(links []config.LinkConfig) []binding.LinkConfig {
+	result := make([]binding.LinkConfig, len(links))
+	for i, l := range links {
+		result[i] = binding.LinkConfig{Name: l.Name, URL: l.URL}
+	}
+	return result
 }

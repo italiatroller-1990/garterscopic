@@ -337,23 +337,18 @@ If an option is not provided and has a default, the default is used.
 
 ## Using Components in Layouts
 
-In `layouts/home.yaml`:
+In `layouts/default.yaml`:
 
 ```yaml
-name: home
+name: default
 
 components:
   - name: navbar
     position: top
     options:
       logo: My Site
-      links:
-        - name: Home
-          url: /
-        - name: About
-          url: /about/
-        - name: Blog
-          url: /blog/
+      from:
+        links: site.links
 
   - name: hero
     position: center
@@ -435,7 +430,18 @@ Supported data sources:
 
 - `frontmatter.*` – Page frontmatter fields
 - `page.*` – Page metadata (route, url, type, etc.)
-- `site.*` – Site configuration (name, base_url, etc.)
+- `site.*` – Site configuration (name, base_url, links, responsive widths, etc.)
+
+#### Site Fields
+
+| Binding | Returns |
+|---------|---------|
+| `site.name` | Site name from `site.yaml` |
+| `site.base_url` | Base URL from `site.yaml` |
+| `site.links` | Navigation links list |
+| `site.mobile_width` | Mobile breakpoint (default: `768px`) |
+| `site.tablet_width` | Tablet breakpoint (default: `1024px`) |
+| `site.desktop_width` | Desktop breakpoint (default: `1200px`) |
 
 ### Example
 

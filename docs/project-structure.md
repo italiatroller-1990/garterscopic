@@ -37,7 +37,7 @@ site/
 ## Directory Purposes
 
 ### `site.yaml`
-The root configuration file. Defines site name, URLs, build settings, and global options.
+The root configuration file. Defines site name, URLs, build settings, responsive breakpoints, navigation links, and global options.
 
 ### `components/`
 HTML component files. Components are ordinary HTML with `{{ placeholder }}` syntax for dynamic values.
