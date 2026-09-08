@@ -69,7 +69,7 @@ components:
         required: true
       
       links:
-        type: list
+        type: links
         required: true
 ```
 
@@ -151,6 +151,8 @@ components:
 
 A list of values (YAML array).
 
+For example, placeholder links that literally does nothing!
+
 ```yaml
 options:
   links:
@@ -171,6 +173,39 @@ components:
 ```
 
 HTML component receives the list as-is. By default, list items are joined with commas and HTML-escaped.
+
+### links
+
+A list of navigation links, rendered as HTML `<li><a>` elements.
+
+```yaml
+options:
+  links:
+    type: links
+```
+
+Each item is an object with `name` (display text) and `url` (href).
+
+Usage in layout:
+
+```yaml
+components:
+  - name: navbar
+    options:
+      links:
+        - name: Home
+          url: /
+        - name: About
+          url: /about/
+        - name: Blog
+          url: /blog/
+```
+
+Renders as:
+
+```html
+<li><a href="/">Home</a></li><li><a href="/about/">About</a></li><li><a href="/blog/">Blog</a></li>
+```
 
 ### object
 
@@ -313,9 +348,12 @@ components:
     options:
       logo: My Site
       links:
-        - Home
-        - About
-        - Blog
+        - name: Home
+          url: /
+        - name: About
+          url: /about/
+        - name: Blog
+          url: /blog/
 
   - name: hero
     position: center
