@@ -215,6 +215,8 @@ The result should be a generator that is:
 
 We will publish reproducible benchmarks rather than making unsupported claims about being faster than Hugo.
 
+But please do note that benchmarks aren't universal results, so please do not flex your scores.
+
 ## References
 
 - Hugo architecture: https://github.com/gohugoio/hugo
