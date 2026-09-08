@@ -19,6 +19,7 @@ type SiteConfig struct {
 	Responsive      ResponsiveConfig `yaml:"responsive"`
 	Links           []LinkConfig     `yaml:"links"`
 	Favicon         string           `yaml:"favicon"`
+	Icon            string           `yaml:"icon"`
 	Language        string           `yaml:"language"`
 	SEO             SEOConfig        `yaml:"seo"`
 }
@@ -108,6 +109,9 @@ func setDefaults(cfg *SiteConfig) {
 	}
 	if cfg.Responsive.Desktop == "" {
 		cfg.Responsive.Desktop = "1200px"
+	}
+	if cfg.Icon == "" {
+		cfg.Icon = "assets/icon"
 	}
 }
 
