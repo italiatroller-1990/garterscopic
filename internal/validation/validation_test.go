@@ -233,7 +233,7 @@ fields:
 				"title": "Blog Post",
 				"date":  "2024-01-15",
 			},
-			Route:  "/blog/post/",
+			Route:   "/blog/post/",
 			Section: "blog",
 		},
 	}
@@ -289,8 +289,8 @@ fields:
 			Metadata: map[string]any{
 				"title": "Blog Post",
 			},
-			Route:  "/blog/post/",
-			Section: "blog",
+			Route:      "/blog/post/",
+			Section:    "blog",
 			SourcePath: filepath.Join(tmpdir, "posts", "blog", "post.md"),
 		},
 	}

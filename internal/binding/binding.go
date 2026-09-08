@@ -24,11 +24,11 @@ type SiteInfo struct {
 }
 
 type ContentInfo struct {
-	Posts     []map[string]any
-	Pages     []map[string]any
-	Sections  []string
-	Tags      []string
-	TagIndex  map[string][]map[string]any
+	Posts        []map[string]any
+	Pages        []map[string]any
+	Sections     []string
+	Tags         []string
+	TagIndex     map[string][]map[string]any
 	SectionPosts map[string][]map[string]any
 }
 

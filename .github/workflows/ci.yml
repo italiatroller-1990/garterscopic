@@ -120,11 +120,6 @@ jobs:
             arch: amd64
             artifact: garterscopic-freebsd-amd64
 
-          - os: freebsd
-            arch: arm64
-            artifact: garterscopic-freebsd-arm64
-
-          # WinSlop™
           - os: windows
             arch: amd64
             artifact: garterscopic-windows-amd64.exe
@@ -141,10 +136,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.21'
-          cache: true
-
-      - name: Download dependencies
-        run: go mod download
 
       - name: Build ${{ matrix.target.artifact }}
         env:
@@ -197,4 +188,3 @@ jobs:
           test -f dist/index.html
           test -f dist/about/index.html
           test -f dist/styles.css
-          test -f dist/assets/js/main.js

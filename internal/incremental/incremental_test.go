@@ -43,7 +43,7 @@ func TestTracker_LoadSave(t *testing.T) {
 func TestTracker_NeedsRebuild(t *testing.T) {
 	tracker := NewTracker(t.TempDir())
 	route := "/test"
-	
+
 	hashes1 := []FileHash{{Path: "f1", Hash: "h1"}}
 	hashes2 := []FileHash{{Path: "f1", Hash: "h2"}}
 	hashes3 := []FileHash{{Path: "f1", Hash: "h1"}, {Path: "f2", Hash: "h2"}}
@@ -75,7 +75,7 @@ func TestTracker_NeedsRebuild(t *testing.T) {
 
 func TestTracker_GlobalChanged(t *testing.T) {
 	tracker := NewTracker(t.TempDir())
-	
+
 	hashes1 := []FileHash{{Path: "g1", Hash: "gh1"}}
 	hashes2 := []FileHash{{Path: "g1", Hash: "gh2"}}
 
