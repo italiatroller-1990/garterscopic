@@ -44,12 +44,18 @@ jobs:
       - name: Build binary
         run: |
           VERSION="0.0.0-dev"
+
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             VERSION="${GITHUB_REF#refs/tags/}"
             VERSION="${VERSION#v}"
           fi
-          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags="-s -w -X main.version=${VERSION}" -o garterscopic-windows-amd64 ./cmd/garterscopic
-CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -trimpath -ldflags="-s -w -X main.version=${VERSION}" -o garterscopic-windows-arm64 ./cmd/garterscopic
+
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+            go build \
+              -trimpath \
+              -ldflags="-s -w -X main.version=${VERSION}" \
+              -o garterscopic \
+              ./cmd/garterscopic
 
       - name: Verify binary executes (Linux)
         run: |
@@ -88,27 +94,45 @@ CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -trimpath -ldflags="-s -w -X ma
   build-matrix:
     needs: ci
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+
     strategy:
+      fail-fast: false
       matrix:
         target:
           - os: linux
             arch: amd64
             artifact: garterscopic-linux-amd64
+
           - os: linux
             arch: arm64
             artifact: garterscopic-linux-arm64
+
           - os: darwin
             arch: amd64
             artifact: garterscopic-darwin-amd64
+
           - os: darwin
             arch: arm64
             artifact: garterscopic-darwin-arm64
+
           - os: freebsd
             arch: amd64
             artifact: garterscopic-freebsd-amd64
+
           - os: freebsd
             arch: arm64
             artifact: garterscopic-freebsd-arm64
+
+          # WinSlop™
+          - os: windows
+            arch: amd64
+            artifact: garterscopic-windows-amd64.exe
+
+          - os: windows
+            arch: arm64
+            artifact: garterscopic-windows-arm64.exe
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -128,7 +152,11 @@ CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -trimpath -ldflags="-s -w -X ma
           GOARCH: ${{ matrix.target.arch }}
           CGO_ENABLED: 0
         run: |
-          go build -ldflags="-s -w" -o ${{ matrix.target.artifact }} ./cmd/garterscopic
+          go build \
+            -trimpath \
+            -ldflags="-s -w" \
+            -o "${{ matrix.target.artifact }}" \
+            ./cmd/garterscopic
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -140,32 +168,32 @@ CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -trimpath -ldflags="-s -w -X ma
   integration-tests:
     needs: build-matrix
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - artifact: garterscopic-linux-amd64
-            os: linux
+
     steps:
-      - name: Download artifact
+      - name: Download Linux amd64 artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{ matrix.artifact }}
+          name: garterscopic-linux-amd64
 
       - name: Make executable
-        run: chmod +x ${{ matrix.artifact }}
+        run: chmod +x garterscopic-linux-amd64
 
       - name: Verify binary
         run: |
-          mv ${{ matrix.artifact }} garterscopic
+          mv garterscopic-linux-amd64 garterscopic
           ./garterscopic --version
           ./garterscopic --help
 
       - name: Test full workflow
         run: |
           rm -rf /tmp/garterscopic-test
+
           ./garterscopic init /tmp/garterscopic-test
+
           cd /tmp/garterscopic-test
+
           ${{ github.workspace }}/garterscopic build
+
           test -f dist/index.html
           test -f dist/about/index.html
           test -f dist/styles.css
