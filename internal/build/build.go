@@ -382,6 +382,11 @@ func (b *Builder) wrapInDocument(body string, page pages.Page, metadata map[stri
 		}
 	}
 
+	var faviconTag string
+	if b.Config.Favicon != "" {
+		faviconTag = fmt.Sprintf(`<link rel="icon" href="/assets/icon/%s">`, b.Config.Favicon)
+	}
+
 	// Generate SEO meta tags
 	seoMetaTags := b.Renderer.RenderSEOMetaTags(&page, b.Config.BaseURL)
 
@@ -391,11 +396,12 @@ func (b *Builder) wrapInDocument(body string, page pages.Page, metadata map[stri
 %s
     %s
     %s
+    %s
 </head>
 <body>
 %s
 </body>
-</html>`, lang, seoMetaTags, stylesTag, strings.Join(scriptsTags, "\n    "), body)
+</html>`, lang, seoMetaTags, faviconTag, stylesTag, strings.Join(scriptsTags, "\n    "), body)
 }
 
 func (b *Builder) collectUsedStyles() []string {

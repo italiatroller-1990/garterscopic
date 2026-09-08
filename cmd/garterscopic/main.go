@@ -205,6 +205,8 @@ links:
     url: /
   - name: About
     url: /about/
+
+favicon: favicon.png
 `, strings.Title(name)),
 
 		"components/definitions.yaml": `components:

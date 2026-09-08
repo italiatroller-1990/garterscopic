@@ -18,6 +18,7 @@ type SiteConfig struct {
 	Scripts         []ScriptConfig   `yaml:"scripts"`
 	Responsive      ResponsiveConfig `yaml:"responsive"`
 	Links           []LinkConfig     `yaml:"links"`
+	Favicon         string           `yaml:"favicon"`
 	Language        string           `yaml:"language"`
 	SEO             SEOConfig        `yaml:"seo"`
 }
