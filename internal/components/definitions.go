@@ -163,6 +163,10 @@ func validateType(val any, expectedType, componentName, fieldName string) error 
 		if _, ok := val.(string); !ok {
 			return fmt.Errorf("component '%s', option '%s': expected string for html type, got %T", componentName, fieldName, val)
 		}
+	case "links":
+		if _, ok := val.([]any); !ok {
+			return fmt.Errorf("component '%s', option '%s': expected list of link objects, got %T", componentName, fieldName, val)
+		}
 	}
 	return nil
 }

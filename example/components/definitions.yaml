@@ -6,7 +6,7 @@ components:
       logo:
         type: string
       links:
-        type: list
+        type: links
 
   hero:
     file: hero.html

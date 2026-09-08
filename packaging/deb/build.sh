@@ -10,6 +10,23 @@ if [ -z "$VERSION" ]; then
     exit 1
 fi
 
+# Strip leading v if present
+VERSION="${VERSION#v}"
+
+# Map architecture names
+DEB_ARCH="$ARCH"
+case "$ARCH" in
+    amd64|x86_64)
+        DEB_ARCH="amd64"
+        ;;
+    arm64|aarch64)
+        DEB_ARCH="arm64"
+        ;;
+    *)
+        DEB_ARCH="$ARCH"
+        ;;
+esac
+
 TEMP_DIR=$(mktemp -d)
 trap "rm -rf $TEMP_DIR" EXIT
 
@@ -30,7 +47,7 @@ Homepage: https://github.com/italiatroller-1990/garterscopic
 Description: Declarative Lightweight Static Site Generator
  Garterscopic is a simple, fast static site generator that lets you
  build websites using HTML, YAML, Markdown, and CSS - no Node.js required.
-Architecture: ${ARCH}
+Architecture: ${DEB_ARCH}
 Depends: bash (>= 4.0)
 License: Apache-2.0
 EOF
@@ -119,5 +136,5 @@ COMPLETION
 cp "$OUTPUT/garterscopic" "$PKG_DIR/usr/local/bin/garterscopic"
 chmod 755 "$PKG_DIR/usr/local/bin/garterscopic"
 
-dpkg-deb --build "$PKG_DIR" "$OUTPUT/garterscopic_${VERSION}_${ARCH}.deb"
-echo "Created: $OUTPUT/garterscopic_${VERSION}_${ARCH}.deb"
+dpkg-deb --build "$PKG_DIR" "$OUTPUT/garterscopic_${VERSION}_${DEB_ARCH}.deb"
+echo "Created: $OUTPUT/garterscopic_${VERSION}_${DEB_ARCH}.deb"

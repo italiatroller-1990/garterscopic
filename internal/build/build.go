@@ -16,7 +16,9 @@ import (
 	"github.com/italiatroller-1990/garterscopic/internal/pages"
 	"github.com/italiatroller-1990/garterscopic/internal/pagetypes"
 	"github.com/italiatroller-1990/garterscopic/internal/renderer"
+	"github.com/italiatroller-1990/garterscopic/internal/robots"
 	"github.com/italiatroller-1990/garterscopic/internal/routing"
+	"github.com/italiatroller-1990/garterscopic/internal/sitemap"
 	"github.com/italiatroller-1990/garterscopic/internal/styles"
 	"github.com/italiatroller-1990/garterscopic/internal/validation"
 )
@@ -39,6 +41,7 @@ type Builder struct {
 	Layouts    map[string]layouts.Layout
 	PageTypes  map[string]pagetypes.PageType
 	Pages      []pages.Page
+	Posts      []pages.Page
 	Renderer   *renderer.Renderer
 }
 
@@ -69,6 +72,11 @@ func (b *Builder) Load() error {
 		return fmt.Errorf("failed to load pages: %w", err)
 	}
 
+	b.Posts, err = pages.ParsePosts(b.Config)
+	if err != nil {
+		return fmt.Errorf("failed to load posts: %w", err)
+	}
+
 	b.Renderer = renderer.New(b.Components)
 
 	return nil
@@ -76,7 +84,7 @@ func (b *Builder) Load() error {
 
 func (b *Builder) Validate() *validation.BuildError {
 	v := validation.New(b.Config)
-	return v.ValidateAll(b.Components, b.Layouts, b.PageTypes, b.Pages)
+	return v.ValidateAll(b.Components, b.Layouts, b.PageTypes, b.Pages, b.Posts)
 }
 
 func (b *Builder) Build() (*BuildResult, error) {
@@ -99,12 +107,20 @@ func (b *Builder) Build() (*BuildResult, error) {
 		return nil, fmt.Errorf("failed to load styles: %w", err)
 	}
 
-	sort.Slice(b.Pages, func(i, j int) bool {
-		return b.Pages[i].Route < b.Pages[j].Route
+	allContent := append(b.Pages, b.Posts...)
+
+	sort.Slice(allContent, func(i, j int) bool {
+		return allContent[i].Route < allContent[j].Route
 	})
 
-	for _, page := range b.Pages {
-		html, err := b.renderPage(page, len(combinedCSS) > 0)
+	contentInfo := b.buildContentInfo()
+
+	for _, page := range allContent {
+		if page.Draft {
+			continue
+		}
+
+		html, err := b.renderPage(page, len(combinedCSS) > 0, contentInfo)
 		if err != nil {
 			return nil, fmt.Errorf("failed to render page %s: %w", page.SourcePath, err)
 		}
@@ -116,6 +132,25 @@ func (b *Builder) Build() (*BuildResult, error) {
 
 		if err := os.WriteFile(outputPath, []byte(html), 0644); err != nil {
 			return nil, fmt.Errorf("failed to write page: %w", err)
+		}
+
+		result.PagesGenerated++
+	}
+
+	autoPages := b.generateAutoPages(contentInfo)
+	for _, page := range autoPages {
+		html, err := b.renderPage(page, len(combinedCSS) > 0, contentInfo)
+		if err != nil {
+			return nil, fmt.Errorf("failed to render auto page %s: %w", page.Route, err)
+		}
+
+		outputPath := filepath.Join(tmpDir, routing.OutputPath(page.Route))
+		if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
+			return nil, fmt.Errorf("failed to create directory for auto page: %w", err)
+		}
+
+		if err := os.WriteFile(outputPath, []byte(html), 0644); err != nil {
+			return nil, fmt.Errorf("failed to write auto page: %w", err)
 		}
 
 		result.PagesGenerated++
@@ -137,6 +172,21 @@ func (b *Builder) Build() (*BuildResult, error) {
 	}
 	result.AssetsCopied = assetCount
 
+	// Generate sitemap.xml
+	allPages := append(b.Pages, b.Posts...)
+	sitemapContent := sitemap.Generate(allPages, b.Config.BaseURL)
+	sitemapPath := filepath.Join(tmpDir, b.Config.SEO.SitemapFile)
+	if err := os.WriteFile(sitemapPath, []byte(sitemapContent), 0644); err != nil {
+		return nil, fmt.Errorf("failed to write sitemap: %w", err)
+	}
+
+	// Generate robots.txt
+	robotsContent := robots.Generate(b.Config.BaseURL, b.Config.SEO.SitemapFile)
+	robotsPath := filepath.Join(tmpDir, b.Config.SEO.RobotsFile)
+	if err := os.WriteFile(robotsPath, []byte(robotsContent), 0644); err != nil {
+		return nil, fmt.Errorf("failed to write robots.txt: %w", err)
+	}
+
 	if err := os.RemoveAll(b.Config.Build.Output); err != nil {
 		return nil, fmt.Errorf("failed to remove old output: %w", err)
 	}
@@ -148,7 +198,7 @@ func (b *Builder) Build() (*BuildResult, error) {
 	return result, nil
 }
 
-func (b *Builder) renderPage(page pages.Page, hasStyles bool) (string, error) {
+func (b *Builder) renderPage(page pages.Page, hasStyles bool, contentInfo binding.ContentInfo) (string, error) {
 	pageType, exists := b.PageTypes[page.Type]
 	if !exists {
 		pageType = pagetypes.PageType{Name: page.Type}
@@ -156,9 +206,20 @@ func (b *Builder) renderPage(page pages.Page, hasStyles bool) (string, error) {
 
 	metadata := pageType.ApplyDefaults(page.Metadata)
 
+	if page.AutoPageType != "" {
+		if pt, ok := b.PageTypes[page.AutoPageType]; ok {
+			pageType = pt
+			metadata = pt.ApplyDefaults(metadata)
+		}
+	}
+
 	layoutName := pageType.Layout
 	if layoutName == "" {
 		layoutName = b.Config.DefaultLayout
+	}
+
+	if page.AutoLayout != "" {
+		layoutName = page.AutoLayout
 	}
 
 	layout, exists := b.Layouts[layoutName]
@@ -166,7 +227,7 @@ func (b *Builder) renderPage(page pages.Page, hasStyles bool) (string, error) {
 		return "", fmt.Errorf("layout '%s' not found", layoutName)
 	}
 
-	htmlBody, err := b.renderLayout(layout, page, metadata)
+	htmlBody, err := b.renderLayout(layout, page, metadata, contentInfo)
 	if err != nil {
 		return "", err
 	}
@@ -174,8 +235,8 @@ func (b *Builder) renderPage(page pages.Page, hasStyles bool) (string, error) {
 	return b.wrapInDocument(htmlBody, page, metadata, hasStyles), nil
 }
 
-func (b *Builder) renderLayout(layout layouts.Layout, page pages.Page, metadata map[string]any) (string, error) {
-	resolver := binding.NewResolver(
+func (b *Builder) renderLayout(layout layouts.Layout, page pages.Page, metadata map[string]any, contentInfo binding.ContentInfo) (string, error) {
+	resolver := binding.NewResolverWithContent(
 		metadata,
 		binding.PageInfo{
 			Route: page.Route,
@@ -186,6 +247,7 @@ func (b *Builder) renderLayout(layout layouts.Layout, page pages.Page, metadata 
 			Name:    b.Config.Name,
 			BaseURL: b.Config.BaseURL,
 		},
+		contentInfo,
 	)
 
 	groups := layout.GroupByPosition()
@@ -295,16 +357,6 @@ func (b *Builder) renderInstance(inst layouts.ComponentInstance, page pages.Page
 }
 
 func (b *Builder) wrapInDocument(body string, page pages.Page, metadata map[string]any, hasStyles bool) string {
-	title := ""
-	if t, ok := metadata["title"].(string); ok {
-		title = t
-	}
-
-	description := ""
-	if d, ok := metadata["description"].(string); ok {
-		description = d
-	}
-
 	lang := b.Config.Language
 	if l, ok := metadata["language"].(string); ok {
 		lang = l
@@ -326,17 +378,12 @@ func (b *Builder) wrapInDocument(body string, page pages.Page, metadata map[stri
 		}
 	}
 
-	metaDescription := ""
-	if description != "" {
-		metaDescription = fmt.Sprintf(`    <meta name="description" content="%s">`, escapeHTML(description))
-	}
+	// Generate SEO meta tags
+	seoMetaTags := b.Renderer.RenderSEOMetaTags(&page, b.Config.BaseURL)
 
 	return fmt.Sprintf(`<!doctype html>
 <html lang="%s">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>%s</title>
 %s
     %s
     %s
@@ -344,7 +391,7 @@ func (b *Builder) wrapInDocument(body string, page pages.Page, metadata map[stri
 <body>
 %s
 </body>
-</html>`, lang, escapeHTML(title), metaDescription, stylesTag, strings.Join(scriptsTags, "\n    "), body)
+</html>`, lang, seoMetaTags, stylesTag, strings.Join(scriptsTags, "\n    "), body)
 }
 
 func (b *Builder) collectUsedStyles() []string {
@@ -389,6 +436,157 @@ func (b *Builder) collectScripts() []config.ScriptConfig {
 	var scripts []config.ScriptConfig
 	scripts = append(scripts, b.Config.Scripts...)
 	return scripts
+}
+
+func (b *Builder) buildContentInfo() binding.ContentInfo {
+	postsData := make([]map[string]any, 0, len(b.Posts))
+	for _, p := range b.Posts {
+		if p.Draft {
+			continue
+		}
+		data := map[string]any{
+			"title":       p.Metadata["title"],
+			"description": p.Metadata["description"],
+			"date":        p.Date,
+			"tags":        p.Tags,
+			"section":     p.Section,
+			"slug":        p.Slug,
+			"route":       p.Route,
+			"url":         p.Route,
+			"author":      p.Metadata["author"],
+		}
+		postsData = append(postsData, data)
+	}
+
+	pagesData := make([]map[string]any, 0, len(b.Pages))
+	for _, p := range b.Pages {
+		data := map[string]any{
+			"title":       p.Metadata["title"],
+			"description": p.Metadata["description"],
+			"route":       p.Route,
+			"url":         p.Route,
+			"type":        p.Type,
+		}
+		pagesData = append(pagesData, data)
+	}
+
+	sections := pages.Sections(b.Posts)
+	sectionPosts := make(map[string][]map[string]any)
+	for _, section := range sections {
+		posts := pages.PostsBySection(b.Posts, section)
+		var data []map[string]any
+		for _, p := range posts {
+			if p.Draft {
+				continue
+			}
+			data = append(data, map[string]any{
+				"title":       p.Metadata["title"],
+				"description": p.Metadata["description"],
+				"date":        p.Date,
+				"tags":        p.Tags,
+				"section":     p.Section,
+				"slug":        p.Slug,
+				"route":       p.Route,
+				"url":         p.Route,
+				"author":      p.Metadata["author"],
+			})
+		}
+		sectionPosts[section] = data
+	}
+
+	tags := pages.AllTags(b.Posts)
+	tagIndex := make(map[string][]map[string]any)
+	for _, tag := range tags {
+		posts := pages.PostsByTag(b.Posts, tag)
+		var data []map[string]any
+		for _, p := range posts {
+			if p.Draft {
+				continue
+			}
+			data = append(data, map[string]any{
+				"title":       p.Metadata["title"],
+				"description": p.Metadata["description"],
+				"date":        p.Date,
+				"tags":        p.Tags,
+				"section":     p.Section,
+				"slug":        p.Slug,
+				"route":       p.Route,
+				"url":         p.Route,
+				"author":      p.Metadata["author"],
+			})
+		}
+		tagIndex[tag] = data
+	}
+
+	return binding.ContentInfo{
+		Posts:        postsData,
+		Pages:        pagesData,
+		Sections:     sections,
+		Tags:         tags,
+		TagIndex:     tagIndex,
+		SectionPosts: sectionPosts,
+	}
+}
+
+func (b *Builder) generateAutoPages(contentInfo binding.ContentInfo) []pages.Page {
+	var autoPages []pages.Page
+
+	for _, section := range contentInfo.Sections {
+		sectionPosts := contentInfo.SectionPosts[section]
+		metadata := map[string]any{
+			"title":       section,
+			"description": fmt.Sprintf("Posts in %s", section),
+			"section":     section,
+			"posts":       sectionPosts,
+		}
+
+		autoPages = append(autoPages, pages.Page{
+			Route:          "/" + section + "/",
+			Type:           b.Config.DefaultPageType,
+			Metadata:       metadata,
+			AutoGenerated:  true,
+			AutoLayout:     b.Config.DefaultLayout,
+			AutoPageType:   b.Config.DefaultPageType,
+		})
+	}
+
+	for _, tag := range contentInfo.Tags {
+		tagPosts := contentInfo.TagIndex[tag]
+		metadata := map[string]any{
+			"title":       fmt.Sprintf("Tag: %s", tag),
+			"description": fmt.Sprintf("Posts tagged with %s", tag),
+			"tag":         tag,
+			"posts":       tagPosts,
+		}
+
+		autoPages = append(autoPages, pages.Page{
+			Route:          "/tags/" + tag + "/",
+			Type:           b.Config.DefaultPageType,
+			Metadata:       metadata,
+			AutoGenerated:  true,
+			AutoLayout:     b.Config.DefaultLayout,
+			AutoPageType:   b.Config.DefaultPageType,
+		})
+	}
+
+	if len(contentInfo.Tags) > 0 {
+		metadata := map[string]any{
+			"title":       "Tags",
+			"description": "All tags",
+			"tags":        contentInfo.Tags,
+		}
+
+		autoPages = append(autoPages, pages.Page{
+			Route:          "/tags/",
+			Type:           b.Config.DefaultPageType,
+			Metadata:       metadata,
+			AutoGenerated:  true,
+			AutoLayout:     b.Config.DefaultLayout,
+			AutoPageType:   b.Config.DefaultPageType,
+		})
+	}
+
+	return autoPages
 }
 
 func escapeHTML(s string) string {

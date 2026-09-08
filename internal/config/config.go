@@ -17,6 +17,15 @@ type SiteConfig struct {
 	Styles          StylesConfig   `yaml:"styles"`
 	Scripts         []ScriptConfig `yaml:"scripts"`
 	Language        string         `yaml:"language"`
+	SEO             SEOConfig      `yaml:"seo"`
+}
+
+type SEOConfig struct {
+	Author      string `yaml:"author"`
+	Keywords    string `yaml:"keywords"`
+	ThemeColor  string `yaml:"theme_color"`
+	SitemapFile string `yaml:"sitemap_file"`
+	RobotsFile  string `yaml:"robots_file"`
 }
 
 type BuildConfig struct {
@@ -70,6 +79,12 @@ func setDefaults(cfg *SiteConfig) {
 	}
 	if cfg.Language == "" {
 		cfg.Language = "en"
+	}
+	if cfg.SEO.SitemapFile == "" {
+		cfg.SEO.SitemapFile = "sitemap.xml"
+	}
+	if cfg.SEO.RobotsFile == "" {
+		cfg.SEO.RobotsFile = "robots.txt"
 	}
 }
 

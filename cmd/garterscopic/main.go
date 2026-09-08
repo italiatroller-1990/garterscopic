@@ -55,7 +55,8 @@ Commands:
   dev             Start the development server
   clean           Remove generated files
   init [name]     Create a new project
-  new [type] [name]  Create a new page (type: page, post)
+  new page <name>         Create a new page
+  new post [section/]slug Create a new post (optionally in a section)
 
 Options:
   --help, -h      Show this help
@@ -420,7 +421,8 @@ a:hover {
 
 func runNew() {
 	if len(os.Args) < 4 {
-		fmt.Fprintln(os.Stderr, "Usage: garterscopic new <type> <name>")
+		fmt.Fprintln(os.Stderr, "Usage: garterscopic new page <name>")
+		fmt.Fprintln(os.Stderr, "       garterscopic new post [section/]slug")
 		os.Exit(1)
 	}
 
@@ -432,15 +434,61 @@ func runNew() {
 		os.Exit(1)
 	}
 
-	_, err := config.Load("site.yaml")
-	if err != nil {
+	if pageType == "page" {
+		createPage(pageName)
+	} else {
+		createPost(pageName)
+	}
+}
+
+func createPage(name string) {
+	dir := "pages"
+
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		printError("failed to create directory", err)
+		os.Exit(1)
 	}
 
-	var dir string
-	if pageType == "post" {
-		dir = filepath.Join("pages", "posts")
+	filename := name + ".md"
+	filePath := filepath.Join(dir, filename)
+
+	if _, err := os.Stat(filePath); err == nil {
+		fmt.Fprintf(os.Stderr, "File already exists: %s\n", filePath)
+		os.Exit(1)
+	}
+
+	content := fmt.Sprintf(`---
+type: page
+title: %s
+---
+
+# %s
+
+Your content here.
+`, strings.Title(name), strings.Title(name))
+
+	if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+		printError("failed to create page", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Created: %s\n", filePath)
+}
+
+func createPost(name string) {
+	parts := strings.SplitN(name, "/", 2)
+	var section, slug string
+
+	if len(parts) == 2 {
+		section = parts[0]
+		slug = parts[1]
 	} else {
-		dir = "pages"
+		slug = parts[0]
+	}
+
+	dir := "posts"
+	if section != "" {
+		dir = filepath.Join("posts", section)
 	}
 
 	if err := os.MkdirAll(dir, 0755); err != nil {
@@ -448,37 +496,32 @@ func runNew() {
 		os.Exit(1)
 	}
 
-	filename := pageName + ".md"
-	filepath := filepath.Join(dir, filename)
+	filename := slug + ".md"
+	filePath := filepath.Join(dir, filename)
 
-	if _, err := os.Stat(filepath); err == nil {
-		fmt.Fprintf(os.Stderr, "File already exists: %s\n", filepath)
+	if _, err := os.Stat(filePath); err == nil {
+		fmt.Fprintf(os.Stderr, "File already exists: %s\n", filePath)
 		os.Exit(1)
 	}
 
 	content := fmt.Sprintf(`---
-type: %s
+type: post
 title: %s
-`, pageType, strings.Title(pageName))
+date: %s
+tags: []
+---
 
-	if pageType == "post" {
-		content += "date: " + timeNow().Format("2006-01-02") + "\n"
-		content += "tags: []\n"
-	}
-
-	content += `---
-
-# ` + strings.Title(pageName) + `
+# %s
 
 Your content here.
-`
+`, strings.Title(slug), timeNow().Format("2006-01-02"), strings.Title(slug))
 
-	if err := os.WriteFile(filepath, []byte(content), 0644); err != nil {
-		printError("failed to create page", err)
+	if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+		printError("failed to create post", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Created: %s\n", filepath)
+	fmt.Printf("Created: %s\n", filePath)
 }
 
 func timeNow() time.Time {

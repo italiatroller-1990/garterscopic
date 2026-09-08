@@ -49,13 +49,14 @@ type Validator struct {
 	Layouts    map[string]layouts.Layout
 	PageTypes  map[string]pagetypes.PageType
 	Pages      []pages.Page
+	Posts      []pages.Page
 }
 
 func New(cfg *config.SiteConfig) *Validator {
 	return &Validator{Config: cfg}
 }
 
-func (v *Validator) ValidateAll(comps map[string]components.Definition, layos map[string]layouts.Layout, pts map[string]pagetypes.PageType, pgs []pages.Page) *BuildError {
+func (v *Validator) ValidateAll(comps map[string]components.Definition, layos map[string]layouts.Layout, pts map[string]pagetypes.PageType, pgs []pages.Page, posts []pages.Page) *BuildError {
 	buildErr := &BuildError{}
 
 	v.validateConfig(buildErr)
@@ -63,7 +64,8 @@ func (v *Validator) ValidateAll(comps map[string]components.Definition, layos ma
 	v.validateLayouts(layos, comps, buildErr)
 	v.validatePageTypes(pts, layos, buildErr)
 	v.validatePages(pgs, pts, buildErr)
-	v.validateRoutes(pgs, buildErr)
+	v.validatePages(posts, pts, buildErr)
+	v.validateRoutes(append(pgs, posts...), buildErr)
 
 	if len(buildErr.Errors) == 0 {
 		return nil
@@ -161,6 +163,34 @@ func (v *Validator) validatePages(pgs []pages.Page, pts map[string]pagetypes.Pag
 					Message: verr.Error(),
 					Path:    pg.SourcePath,
 					Hint:    "Fix the frontmatter to match the page type schema",
+				})
+			}
+		}
+
+		if pg.Type == "post" {
+			v.validatePost(pg, err)
+		}
+	}
+}
+
+func (v *Validator) validatePost(pg pages.Page, err *BuildError) {
+	if tags, ok := pg.Metadata["tags"]; ok {
+		if _, ok := tags.([]any); !ok {
+			err.Add(&Error{
+				Message: "post tags must be a list",
+				Path:    pg.SourcePath,
+				Hint:    "Use 'tags: [tag1, tag2]' in frontmatter",
+			})
+		}
+	}
+
+	if date, ok := pg.Metadata["date"]; ok {
+		if s, ok := date.(string); ok {
+			if len(s) != 10 || s[4] != '-' || s[7] != '-' {
+				err.Add(&Error{
+					Message: fmt.Sprintf("invalid date format '%s'", s),
+					Path:    pg.SourcePath,
+					Hint:    "Use YYYY-MM-DD format (e.g., 2024-01-15)",
 				})
 			}
 		}

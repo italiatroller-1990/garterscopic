@@ -143,3 +143,159 @@ func TestApplyBindingsWithFrom(t *testing.T) {
 		t.Errorf("expected postDate to be '2026-01-01', got %v", result["postDate"])
 	}
 }
+
+func TestResolvePosts(t *testing.T) {
+	content := ContentInfo{
+		Posts: []map[string]any{
+			{"title": "Post 1", "route": "/blog/post1/"},
+			{"title": "Post 2", "route": "/blog/post2/"},
+		},
+	}
+
+	resolver := NewResolverWithContent(nil, PageInfo{}, SiteInfo{}, content)
+
+	val, err := resolver.Resolve("posts.all")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	posts, ok := val.([]map[string]any)
+	if !ok {
+		t.Fatalf("expected []map[string]any, got %T", val)
+	}
+	if len(posts) != 2 {
+		t.Errorf("expected 2 posts, got %d", len(posts))
+	}
+}
+
+func TestResolveSections(t *testing.T) {
+	content := ContentInfo{
+		Sections: []string{"blog", "guides"},
+		SectionPosts: map[string][]map[string]any{
+			"blog": {
+				{"title": "Blog Post", "route": "/blog/post/"},
+			},
+			"guides": {
+				{"title": "Guide", "route": "/guides/guide/"},
+			},
+		},
+	}
+
+	resolver := NewResolverWithContent(nil, PageInfo{}, SiteInfo{}, content)
+
+	val, err := resolver.Resolve("sections.all")
+	if err != nil {
+		t.Fatal(err)
+	}
+	sections, ok := val.([]string)
+	if !ok {
+		t.Fatalf("expected []string, got %T", val)
+	}
+	if len(sections) != 2 {
+		t.Errorf("expected 2 sections, got %d", len(sections))
+	}
+
+	val, err = resolver.Resolve("sections.blog")
+	if err != nil {
+		t.Fatal(err)
+	}
+	posts, ok := val.([]map[string]any)
+	if !ok {
+		t.Fatalf("expected []map[string]any, got %T", val)
+	}
+	if len(posts) != 1 {
+		t.Errorf("expected 1 post in blog section, got %d", len(posts))
+	}
+}
+
+func TestResolveTags(t *testing.T) {
+	content := ContentInfo{
+		Tags: []string{"linux", "tutorial"},
+		TagIndex: map[string][]map[string]any{
+			"linux": {
+				{"title": "Linux Post", "route": "/blog/linux/"},
+			},
+			"tutorial": {
+				{"title": "Tutorial 1", "route": "/blog/tutorial1/"},
+				{"title": "Tutorial 2", "route": "/guides/tutorial2/"},
+			},
+		},
+	}
+
+	resolver := NewResolverWithContent(nil, PageInfo{}, SiteInfo{}, content)
+
+	val, err := resolver.Resolve("tags.all")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tags, ok := val.([]string)
+	if !ok {
+		t.Fatalf("expected []string, got %T", val)
+	}
+	if len(tags) != 2 {
+		t.Errorf("expected 2 tags, got %d", len(tags))
+	}
+
+	val, err = resolver.Resolve("tags.linux")
+	if err != nil {
+		t.Fatal(err)
+	}
+	posts, ok := val.([]map[string]any)
+	if !ok {
+		t.Fatalf("expected []map[string]any, got %T", val)
+	}
+	if len(posts) != 1 {
+		t.Errorf("expected 1 linux post, got %d", len(posts))
+	}
+
+	val, err = resolver.Resolve("tags.tutorial")
+	if err != nil {
+		t.Fatal(err)
+	}
+	posts, ok = val.([]map[string]any)
+	if !ok {
+		t.Fatalf("expected []map[string]any, got %T", val)
+	}
+	if len(posts) != 2 {
+		t.Errorf("expected 2 tutorial posts, got %d", len(posts))
+	}
+}
+
+func TestResolveUnknownTag(t *testing.T) {
+	content := ContentInfo{
+		Tags:     []string{"linux"},
+		TagIndex: map[string][]map[string]any{},
+	}
+
+	resolver := NewResolverWithContent(nil, PageInfo{}, SiteInfo{}, content)
+
+	_, err := resolver.Resolve("tags.nonexistent")
+	if err == nil {
+		t.Error("expected error for unknown tag")
+	}
+}
+
+func TestResolveUnknownSection(t *testing.T) {
+	content := ContentInfo{
+		Sections:     []string{"blog"},
+		SectionPosts: map[string][]map[string]any{},
+	}
+
+	resolver := NewResolverWithContent(nil, PageInfo{}, SiteInfo{}, content)
+
+	_, err := resolver.Resolve("sections.nonexistent")
+	if err == nil {
+		t.Error("expected error for unknown section")
+	}
+}
+
+func TestResolvePostsUnknownField(t *testing.T) {
+	content := ContentInfo{}
+
+	resolver := NewResolverWithContent(nil, PageInfo{}, SiteInfo{}, content)
+
+	_, err := resolver.Resolve("posts.nonexistent")
+	if err == nil {
+		t.Error("expected error for unknown posts field")
+	}
+}

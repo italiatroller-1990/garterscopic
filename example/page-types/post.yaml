@@ -7,14 +7,26 @@ fields:
     type: string
     required: true
 
+  description:
+    type: string
+
   date:
     type: date
     required: true
 
+  updated:
+    type: date
+
+  author:
+    type: string
+
   tags:
     type: list
 
-  author:
+  section:
+    type: string
+
+  slug:
     type: string
 
   draft:

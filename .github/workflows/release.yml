@@ -38,6 +38,12 @@ jobs:
           - os: freebsd
             arch: arm64
             artifact: garterscopic-freebsd-arm64
+          - os: windows
+            arch: amd64
+            artifact: garterscopic-windows-amd64
+          - os: windows
+            arch: arm64
+            artifact: garterscopic-windows-arm64
 
     steps:
       - name: Checkout code
@@ -141,9 +147,9 @@ jobs:
             garterscopic-*
             SHA256SUMS
           body: |
-            ## Downloads
+            ## 📥 Downloads
 
-            ### Binaries
+            ### 🖥️ Binaries
 
             | Platform | Architecture | File |
             |----------|--------------|------|
@@ -153,46 +159,68 @@ jobs:
             | macOS | arm64 | `garterscopic-darwin-arm64` |
             | FreeBSD | amd64 | `garterscopic-freebsd-amd64` |
             | FreeBSD | arm64 | `garterscopic-freebsd-arm64` |
+            | Windows | amd64 | `garterscopic-windows-amd64.exe` |
+            | Windows | arm64 | `garterscopic-windows-arm64.exe` |
 
-            ### Packages
+            ### 📦 Distribution Packages
 
-            | Distribution | Package | File |
-            |--------------|---------|------|
-            | Fedora/RHEL | RPM | See [distro packages workflow](../../actions/workflows/packages.yml) |
-            | openSUSE | RPM | See [distro packages workflow](../../actions/workflows/packages.yml) |
-            | Debian | DEB | See [distro packages workflow](../../actions/workflows/packages.yml) |
-            | Ubuntu | DEB | See [distro packages workflow](../../actions/workflows/packages.yml) |
-            | Arch Linux | PKG | See [distro packages workflow](../../actions/workflows/packages.yml) |
-            | Nix | Flake | See [packaging/nix/flake.nix](../blob/main/packaging/nix/flake.nix) |
+            #### Debian/Ubuntu (DEB)
+            ```bash
+            sudo apt install ./garterscopic_${{ steps.version.outputs.version }}_amd64.deb
+            ```
 
-            ### Go
+            #### Fedora/RHEL (RPM)
+            ```bash
+            sudo dnf install ./garterscopic-${{ steps.version.outputs.version }}-1.x86_64.rpm
+            ```
 
+            #### openSUSE (RPM)
+            ```bash
+            sudo zypper install ./garterscopic-${{ steps.version.outputs.version }}-1-opensuse.x86_64.rpm
+            ```
+
+            #### Arch Linux
+            ```bash
+            sudo pacman -U ./garterscopic-${{ steps.version.outputs.version }}-1-x86_64.pkg.tar.zst
+            ```
+
+            #### Nix
+            See [packaging/nix/flake.nix](../../blob/main/packaging/nix/flake.nix) for flake configuration.
+
+            ### 🐹 Go
             ```bash
             go install github.com/italiatroller-1990/garterscopic/cmd/garterscopic@${{ steps.version.outputs.version }}
             ```
 
-            ### Source
-
+            ### 📝 Source
             Download `garterscopic-${{ steps.version.outputs.version }}-src.tar.gz` or use:
-
             ```bash
             git clone --branch ${{ steps.version.outputs.version }} https://github.com/italiatroller-1990/garterscopic
             cd garterscopic
             CGO_ENABLED=0 go build -o garterscopic ./cmd/garterscopic
             ```
 
-            ## Verification
+            ## ✅ Verification
 
+            Verify file integrity:
             ```bash
             sha256sum -c SHA256SUMS
             ```
 
-            ## Installation
+            ## 🚀 Installation
 
+            ### From Binary
             1. Download the binary for your platform
             2. Make it executable: `chmod +x garterscopic-<platform>-<arch>`
-            3. Move it to your PATH: `sudo mv garterscopic-* /usr/local/bin/garterscopic`
+            3. Move to PATH: `sudo mv garterscopic-* /usr/local/bin/garterscopic`
             4. Verify: `garterscopic --version`
+
+            ### From Distribution Package
+            Use the installation commands above for your distribution.
+
+            ## 📋 Release Notes
+
+            For detailed changes, see the [full changelog](../../compare/${{ steps.version.outputs.version }}^...main).
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -229,24 +257,75 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Download package artifacts
+      - name: Download all package artifacts
         uses: actions/download-artifact@v4
         with:
-          path: packages
-          pattern: garterscopic-*-*
-          merge-multiple: true
+          path: all-packages
+
+      - name: Organize packages
+        run: |
+          mkdir -p packages
+          
+          # Copy DEB packages
+          find all-packages -name "*.deb" -type f -exec cp {} packages/ \;
+          
+          # Copy RPM packages
+          find all-packages -name "*.rpm" -type f -exec cp {} packages/ \;
+          
+          # Copy Arch packages
+          find all-packages -name "*.pkg.tar.zst" -type f -exec cp {} packages/ \;
+          
+          ls -lah packages/
 
       - name: Generate package checksums
         working-directory: packages
         run: |
+          if [ -f SHA256SUMS ]; then rm SHA256SUMS; fi
           find . -type f -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS
+          echo "=== Package Checksums ==="
           cat SHA256SUMS
 
       - name: Upload packages to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ needs.create-release.outputs.version }}
-        run: gh release upload "$RELEASE_TAG" packages/* --clobber
+        run: |
+          if [ "$(ls -A packages/*.deb 2>/dev/null | wc -l)" -gt 0 ]; then
+            echo "Uploading DEB packages..."
+            gh release upload "$RELEASE_TAG" packages/*.deb --clobber
+          fi
+          
+          if [ "$(ls -A packages/*.rpm 2>/dev/null | wc -l)" -gt 0 ]; then
+            echo "Uploading RPM packages..."
+            gh release upload "$RELEASE_TAG" packages/*.rpm --clobber
+          fi
+          
+          if [ "$(ls -A packages/*.pkg.tar.zst 2>/dev/null | wc -l)" -gt 0 ]; then
+            echo "Uploading Arch packages..."
+            gh release upload "$RELEASE_TAG" packages/*.pkg.tar.zst --clobber
+          fi
+          
+          if [ -f packages/SHA256SUMS ]; then
+            echo "Uploading checksums..."
+            gh release upload "$RELEASE_TAG" packages/SHA256SUMS --clobber
+          fi
+          
+          echo "Package upload complete!"
+
+      - name: Generate package summary
+        run: |
+          echo "## 📦 Distro Packages"
+          echo ""
+          echo "The following packages have been built and uploaded:"
+          echo ""
+          echo "### DEB Packages (Debian/Ubuntu)"
+          ls -1 packages/*.deb 2>/dev/null | sed 's|.*/||' | sed 's/^/- `/' | sed 's/$`//' || echo "- None"
+          echo ""
+          echo "### RPM Packages (Fedora/openSUSE)"
+          ls -1 packages/*.rpm 2>/dev/null | sed 's|.*/||' | sed 's/^/- `/' | sed 's/$`//' || echo "- None"
+          echo ""
+          echo "### Arch Packages"
+          ls -1 packages/*.pkg.tar.zst 2>/dev/null | sed 's|.*/||' | sed 's/^/- `/' | sed 's/$`//' || echo "- None"
 
   trigger-packaging-repos:
     needs: [ci, create-release, publish-packages]

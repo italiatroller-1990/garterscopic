@@ -285,6 +285,43 @@ func TestRenderObjectType(t *testing.T) {
 	}
 }
 
+func TestRenderLinksType(t *testing.T) {
+	defs := map[string]components.Definition{
+		"navbar": {
+			Name: "navbar",
+			Options: map[string]components.OptionDefinition{
+				"links": {Type: "links"},
+			},
+		},
+	}
+	r := New(defs)
+
+	html := `<ul>{{ links }}</ul>`
+	linksList := []any{
+		map[string]any{"name": "Home", "url": "/"},
+		map[string]any{"name": "About", "url": "/about"},
+		map[string]any{"name": "Contact", "url": "/contact"},
+	}
+	options := map[string]any{
+		"links": linksList,
+	}
+
+	result, err := r.RenderComponentHTML("navbar", html, options)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !contains(result, "<li><a href=\"/\">Home</a></li>") {
+		t.Errorf("links type: expected Home link, got %q", result)
+	}
+	if !contains(result, "<li><a href=\"/about\">About</a></li>") {
+		t.Errorf("links type: expected About link, got %q", result)
+	}
+	if !contains(result, "<li><a href=\"/contact\">Contact</a></li>") {
+		t.Errorf("links type: expected Contact link, got %q", result)
+	}
+}
+
 func contains(s, substr string) bool {
 	// Simple substring check
 	for i := 0; i <= len(s)-len(substr); i++ {
