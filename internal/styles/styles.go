@@ -1,3 +1,4 @@
+// Package styles collects, concatenates, and copies CSS stylesheets.
 package styles
 
 import (
@@ -9,6 +10,8 @@ import (
 	"github.com/italiatroller-1990/garterscopic/internal/config"
 )
 
+// CollectStyles deduplicates and validates the list of stylesheet paths,
+// returning only files that exist on disk.
 func CollectStyles(cfg *config.SiteConfig, componentStyles []string, globalStyles []string) ([]string, error) {
 	allStyles := make([]string, 0)
 	seen := make(map[string]bool)
@@ -38,6 +41,7 @@ func CollectStyles(cfg *config.SiteConfig, componentStyles []string, globalStyle
 	return validated, nil
 }
 
+// LoadStyles reads and concatenates all listed stylesheets into a single byte slice.
 func LoadStyles(styles []string, sourceDir string) ([]byte, error) {
 	var result []byte
 
@@ -54,6 +58,8 @@ func LoadStyles(styles []string, sourceDir string) ([]byte, error) {
 	return result, nil
 }
 
+// CopyStyles copies each listed stylesheet from sourceDir to destDir,
+// preserving relative directory structure.
 func CopyStyles(styles []string, sourceDir, destDir string) error {
 	for _, style := range styles {
 		srcPath := filepath.Join(sourceDir, style)

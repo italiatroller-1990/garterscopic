@@ -1,3 +1,4 @@
+// Package pagetypes defines page type schemas with field validation and defaults.
 package pagetypes
 
 import (
@@ -10,12 +11,16 @@ import (
 	"github.com/italiatroller-1990/garterscopic/internal/yaml"
 )
 
+// PageType defines the schema for a class of pages: its layout and required
+// fields with types and defaults.
 type PageType struct {
 	Name   string              `yaml:"name"`
 	Layout string              `yaml:"layout"`
 	Fields map[string]FieldDef `yaml:"fields"`
 }
 
+// FieldDef describes a single field in a page type: its expected type,
+// whether it is required, and an optional default value.
 type FieldDef struct {
 	Type     string `yaml:"type"`
 	Required bool   `yaml:"required"`
@@ -28,6 +33,9 @@ type rawPageType struct {
 	Fields map[string]FieldDef `yaml:"fields"`
 }
 
+// LoadPageTypes reads all YAML files from the page-types directory and
+// returns a map of page type name to PageType. Missing directories are
+// treated as empty.
 func LoadPageTypes(cfg *config.SiteConfig) (map[string]PageType, error) {
 	dir := cfg.SourcePath("page-types")
 
@@ -70,6 +78,8 @@ func LoadPageTypes(cfg *config.SiteConfig) (map[string]PageType, error) {
 	return types, nil
 }
 
+// ApplyDefaults returns a copy of metadata with any missing fields filled
+// in from the page type's field defaults.
 func (pt *PageType) ApplyDefaults(metadata map[string]any) map[string]any {
 	result := make(map[string]any)
 	for k, v := range metadata {
@@ -85,6 +95,8 @@ func (pt *PageType) ApplyDefaults(metadata map[string]any) map[string]any {
 	return result
 }
 
+// Validate checks metadata against the page type's field definitions.
+// Returns a list of errors for missing required fields or type mismatches.
 func (pt *PageType) Validate(metadata map[string]any) []error {
 	var errs []error
 

@@ -245,6 +245,71 @@ func TestExtractTags(t *testing.T) {
 	}
 }
 
+func TestExtractCategories(t *testing.T) {
+	tests := []struct {
+		name     string
+		metadata map[string]any
+		expected []string
+	}{
+		{
+			name:     "with categories",
+			metadata: map[string]any{"categories": []any{"development", "gamedev"}},
+			expected: []string{"development", "gamedev"},
+		},
+		{
+			name:     "no categories field",
+			metadata: map[string]any{"title": "Test"},
+			expected: nil,
+		},
+		{
+			name:     "categories not a list",
+			metadata: map[string]any{"categories": "development"},
+			expected: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := extractStringList(tt.metadata, "categories")
+			if len(result) != len(tt.expected) {
+				t.Errorf("extractStringList() returned %v, want %v", result, tt.expected)
+				return
+			}
+			for i := range result {
+				if result[i] != tt.expected[i] {
+					t.Errorf("extractStringList()[%d] = %q, want %q", i, result[i], tt.expected[i])
+				}
+			}
+		})
+	}
+}
+
+func TestAllCategoriesAndIndex(t *testing.T) {
+	posts := []Page{
+		{Categories: []string{"development", "tutorial"}},
+		{Categories: []string{"development"}},
+		{Categories: nil},
+	}
+
+	categories := AllCategories(posts)
+	if len(categories) != 2 || categories[0] != "development" || categories[1] != "tutorial" {
+		t.Errorf("AllCategories() = %v, want [development tutorial]", categories)
+	}
+
+	index := CategoryIndex(posts)
+	if len(index["development"]) != 2 {
+		t.Errorf("CategoryIndex()['development'] has %d posts, want 2", len(index["development"]))
+	}
+	if len(index["tutorial"]) != 1 {
+		t.Errorf("CategoryIndex()['tutorial'] has %d posts, want 1", len(index["tutorial"]))
+	}
+
+	devPosts := PostsByCategory(posts, "development")
+	if len(devPosts) != 2 {
+		t.Errorf("PostsByCategory('development') returned %d posts, want 2", len(devPosts))
+	}
+}
+
 func TestExtractDate(t *testing.T) {
 	tests := []struct {
 		name     string

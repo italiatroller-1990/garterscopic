@@ -1,9 +1,0 @@
-# Garterscopic robots.txt
-# Generated automatically
-
-User-agent: *
-Allow: /
-Disallow: /dist/
-Disallow: /*.tmp
-
-Sitemap: http://localhost:8080/sitemap.xml

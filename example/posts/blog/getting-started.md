@@ -5,6 +5,8 @@ date: 2026-09-06
 tags:
   - tutorial
   - introduction
+categories:
+  - tutorials
 ---
 
 # Getting Started with Garterscopic

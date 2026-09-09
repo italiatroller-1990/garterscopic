@@ -1,3 +1,4 @@
+// Package routing converts page source paths to URL routes and output file paths.
 package routing
 
 import (
@@ -6,6 +7,9 @@ import (
 	"strings"
 )
 
+// GenerateRoute converts a page source path to a URL route. Pages in the
+// pages directory become URL paths with trailing slashes. The root page
+// (pages/index.md) maps to "/".
 func GenerateRoute(sourcePath, pagesDir string) string {
 	relPath, err := filepath.Rel(pagesDir, sourcePath)
 	if err != nil {
@@ -35,6 +39,8 @@ func GenerateRoute(sourcePath, pagesDir string) string {
 	return "/" + strings.Join(routeParts, "/") + "/"
 }
 
+// OutputPath converts a URL route to the filesystem output path.
+// "/" becomes "index.html"; "/about/" becomes "about/index.html".
 func OutputPath(route string) string {
 	if route == "/" {
 		return "index.html"
@@ -61,6 +67,8 @@ func OutputPath(route string) string {
 	return filepath.Join(outputParts...)
 }
 
+// EnsureUniqueRoutes scans pages for duplicate routes and returns the file
+// paths of any pages that share a route with an earlier page.
 func EnsureUniqueRoutes(pages []struct {
 	Route string
 	Path  string
@@ -77,12 +85,16 @@ func EnsureUniqueRoutes(pages []struct {
 	return duplicates
 }
 
+// JoinRoute concatenates a base route and a part with a single slash,
+// trimming redundant slashes.
 func JoinRoute(base, part string) string {
 	base = strings.TrimSuffix(base, "/")
 	part = strings.TrimPrefix(part, "/")
 	return base + "/" + part
 }
 
+// CleanRoute normalizes a route path: cleans dot segments, ensures a leading
+// slash, and removes trailing slashes (except for the root "/").
 func CleanRoute(route string) string {
 	route = path.Clean(route)
 	if route == "." {

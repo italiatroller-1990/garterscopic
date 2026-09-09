@@ -5,6 +5,8 @@ date: 2026-09-05
 tags:
   - linux
   - tutorial
+categories:
+  - tutorials
 ---
 
 # Linux Basics

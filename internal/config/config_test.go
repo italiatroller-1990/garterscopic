@@ -2,8 +2,18 @@ package config
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 )
+
+func writeTemp(t *testing.T, name, content string) string {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), name)
+	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
 
 func TestLoadConfig(t *testing.T) {
 	content := `
@@ -16,18 +26,7 @@ default_layout: default
 default_page_type: page
 `
 
-	tmpfile, err := os.CreateTemp("", "site.yaml")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.Remove(tmpfile.Name())
-
-	if _, err := tmpfile.WriteString(content); err != nil {
-		t.Fatal(err)
-	}
-	tmpfile.Close()
-
-	cfg, err := Load(tmpfile.Name())
+	cfg, err := Load(writeTemp(t, "site.yaml", content))
 	if err != nil {
 		t.Fatalf("failed to load config: %v", err)
 	}
@@ -47,22 +46,7 @@ default_page_type: page
 }
 
 func TestConfigDefaults(t *testing.T) {
-	content := `
-name: Minimal Site
-`
-
-	tmpfile, err := os.CreateTemp("", "site.yaml")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.Remove(tmpfile.Name())
-
-	if _, err := tmpfile.WriteString(content); err != nil {
-		t.Fatal(err)
-	}
-	tmpfile.Close()
-
-	cfg, err := Load(tmpfile.Name())
+	cfg, err := Load(writeTemp(t, "site.yaml", "name: Minimal Site\n"))
 	if err != nil {
 		t.Fatalf("failed to load config: %v", err)
 	}
@@ -81,6 +65,12 @@ name: Minimal Site
 	}
 	if cfg.Language != "en" {
 		t.Errorf("expected default language 'en', got '%s'", cfg.Language)
+	}
+	if cfg.Pagination.PerPage != 10 {
+		t.Errorf("expected default per_page 10, got %d", cfg.Pagination.PerPage)
+	}
+	if cfg.Feed.Path != "/feed.xml" {
+		t.Errorf("expected default feed path '/feed.xml', got '%s'", cfg.Feed.Path)
 	}
 }
 
@@ -105,5 +95,99 @@ func TestOutputPath(t *testing.T) {
 	expected := "public/index.html"
 	if path != expected {
 		t.Errorf("expected '%s', got '%s'", expected, path)
+	}
+}
+
+// The legacy nav-links list form must keep working.
+func TestLinksLegacyList(t *testing.T) {
+	content := `
+name: Test
+links:
+  - name: Home
+    url: /
+  - name: About
+    url: /about/
+`
+	cfg, err := Load(writeTemp(t, "site.yaml", content))
+	if err != nil {
+		t.Fatalf("failed to load config: %v", err)
+	}
+
+	if len(cfg.Links.Entries) != 2 {
+		t.Fatalf("expected 2 link entries, got %d", len(cfg.Links.Entries))
+	}
+	if cfg.Links.Entries[0].Name != "Home" || cfg.Links.Entries[0].URL != "/" {
+		t.Errorf("unexpected first link: %+v", cfg.Links.Entries[0])
+	}
+	if cfg.Links.FailOnBroken {
+		t.Error("expected fail_on_broken to be false by default")
+	}
+}
+
+func TestLinksWithFailOnBroken(t *testing.T) {
+	content := `
+name: Test
+links:
+  fail_on_broken: true
+  entries:
+    - name: Home
+      url: /
+`
+	cfg, err := Load(writeTemp(t, "site.yaml", content))
+	if err != nil {
+		t.Fatalf("failed to load config: %v", err)
+	}
+
+	if !cfg.Links.FailOnBroken {
+		t.Error("expected fail_on_broken true")
+	}
+	if len(cfg.Links.Entries) != 1 || cfg.Links.Entries[0].URL != "/" {
+		t.Errorf("unexpected entries: %+v", cfg.Links.Entries)
+	}
+}
+
+func TestFeatureSections(t *testing.T) {
+	content := `
+name: Test
+sitemap:
+  enabled: true
+feed:
+  enabled: true
+  path: /rss.xml
+  title: My Feed
+taxonomy:
+  tags: true
+  categories: true
+pagination:
+  enabled: true
+  per_page: 5
+gallery:
+  enabled: true
+`
+	cfg, err := Load(writeTemp(t, "site.yaml", content))
+	if err != nil {
+		t.Fatalf("failed to load config: %v", err)
+	}
+
+	if !cfg.Sitemap.Enabled {
+		t.Error("expected sitemap.enabled true")
+	}
+	if !cfg.Feed.Enabled {
+		t.Error("expected feed.enabled true")
+	}
+	if cfg.Feed.Path != "/rss.xml" {
+		t.Errorf("expected feed path '/rss.xml', got '%s'", cfg.Feed.Path)
+	}
+	if cfg.Feed.Title != "My Feed" {
+		t.Errorf("expected feed title 'My Feed', got '%s'", cfg.Feed.Title)
+	}
+	if !cfg.Taxonomy.Tags || !cfg.Taxonomy.Categories {
+		t.Error("expected taxonomy tags/categories enabled")
+	}
+	if !cfg.Pagination.Enabled || cfg.Pagination.PerPage != 5 {
+		t.Errorf("unexpected pagination: %+v", cfg.Pagination)
+	}
+	if !cfg.Gallery.Enabled {
+		t.Error("expected gallery.enabled true")
 	}
 }

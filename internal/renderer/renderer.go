@@ -12,6 +12,75 @@ import (
 
 var placeholderRegex = regexp.MustCompile(`\{\{\s*(\w+)\s*\}\}`)
 
+// Slot tags use ordinary HTML syntax: <slot /> for the default slot and
+// <slot name="header" /> for named slots. Both self-closing and paired-empty
+// forms are accepted; stray closing tags are stripped as well.
+var slotRegex = regexp.MustCompile(`(?i)<slot(?:\s+name\s*=\s*"(\w+)")?\s*(?:/>|>\s*</slot\s*>)`)
+
+var slotCloseRegex = regexp.MustCompile(`(?i)</slot\s*>`)
+
+// Slot placeholder sentinels. Slot tags are first converted into these
+// sentinels so nested component output can be substituted safely.
+const (
+	slotDefaultSentinel   = "\x00GARTERSLOTDEFAULT\x00"
+	slotNamedSentinelFmt  = "\x00GARTERSLOT_%s\x00"
+	slotSentinelPrefix    = "\x00GARTERSLOT_"
+	slotSentinelSuffix    = "\x00"
+	slotDefaultSentinelID = "GARTERSLOTDEFAULT"
+)
+
+// SlotContent carries the content to inject into a component's slot tags.
+type SlotContent struct {
+	Default string
+	Named   map[string]string
+}
+
+// ExtractSlots scans instance options for slot declarations:
+//
+//	slots:
+//	  default: <p>fallback paragraph</p>
+//	  header: <h1>Title</h1>
+//
+// and returns the extracted content with the values removed from options.
+func ExtractSlots(options map[string]any) *SlotContent {
+	raw, exists := options["slots"]
+	if !exists {
+		return nil
+	}
+	delete(options, "slots")
+
+	slotsMap, ok := raw.(map[string]any)
+	if !ok {
+		return nil
+	}
+
+	content := &SlotContent{Named: make(map[string]string)}
+	for name, value := range slotsMap {
+		s, ok := value.(string)
+		if !ok {
+			continue
+		}
+		if name == "default" {
+			content.Default = s
+		} else {
+			content.Named[name] = s
+		}
+	}
+
+	if content.Default == "" && len(content.Named) == 0 {
+		return nil
+	}
+	return content
+}
+
+// SlotSentinel returns the sentinel for a given slot name ("" = default).
+func SlotSentinel(name string) string {
+	if name == "" || name == slotDefaultSentinelID {
+		return slotDefaultSentinel
+	}
+	return fmt.Sprintf(slotNamedSentinelFmt, name)
+}
+
 type Renderer struct {
 	Definitions map[string]components.Definition
 }
@@ -22,6 +91,17 @@ func New(defs map[string]components.Definition) *Renderer {
 
 func (r *Renderer) RenderComponentHTML(compName string, htmlContent string, options map[string]any) (string, error) {
 	result := htmlContent
+
+	slots, _ := options["__slots__"].(*SlotContent)
+
+	// Convert slot tags to sentinels first so that nested placeholders
+	// (e.g. inside provided slot content) are not mangled by the
+	// placeholder pass below. This happens even without provided content,
+	// so unfilled slot tags never leak into the final HTML.
+	result = slotRegex.ReplaceAllStringFunc(result, func(match string) string {
+		m := slotRegex.FindStringSubmatch(match)
+		return SlotSentinel(m[1])
+	})
 
 	result = placeholderRegex.ReplaceAllStringFunc(result, func(match string) string {
 		matches := placeholderRegex.FindStringSubmatch(match)
@@ -43,7 +123,49 @@ func (r *Renderer) RenderComponentHTML(compName string, htmlContent string, opti
 		return r.formatValue(value, optType)
 	})
 
-	return result, nil
+	if slots != nil {
+		result = r.applySlots(result, slots)
+	}
+
+	return r.stripLeftoverSlots(result), nil
+}
+
+func (r *Renderer) applySlots(result string, slots *SlotContent) string {
+	for name, content := range slots.Named {
+		sentinel := SlotSentinel(name)
+		if strings.Contains(result, sentinel) {
+			result = strings.ReplaceAll(result, sentinel, content)
+		}
+		// Named slot not present in the component HTML: content is unused.
+	}
+
+	if strings.Contains(result, slotDefaultSentinel) {
+		result = strings.ReplaceAll(result, slotDefaultSentinel, slots.Default)
+	}
+
+	return result
+}
+
+func (r *Renderer) stripLeftoverSlots(result string) string {
+	// Strip any slot tags for which no content was provided, plus stray
+	// closing tags from paired forms.
+	result = slotRegex.ReplaceAllString(result, "")
+	result = slotCloseRegex.ReplaceAllString(result, "")
+
+	// Remove leftover sentinels for unknown slot names.
+	for {
+		idx := strings.Index(result, slotSentinelPrefix)
+		if idx == -1 {
+			break
+		}
+		end := strings.Index(result[idx:], slotSentinelSuffix)
+		if end == -1 {
+			break
+		}
+		result = result[:idx] + result[idx+end+len(slotSentinelSuffix):]
+	}
+
+	return result
 }
 
 func (r *Renderer) formatValue(value any, optType string) string {

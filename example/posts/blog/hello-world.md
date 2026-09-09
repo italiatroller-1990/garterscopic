@@ -5,6 +5,8 @@ date: 2026-09-07
 tags:
   - introduction
   - welcome
+categories:
+  - news
 ---
 
 # Hello World

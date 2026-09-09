@@ -23,6 +23,7 @@ type Page struct {
 
 	Section       string
 	Tags          []string
+	Categories    []string
 	Date          string
 	Draft         bool
 	Slug          string
@@ -152,6 +153,7 @@ func ParsePosts(cfg *config.SiteConfig) ([]Page, error) {
 		page.Section = section
 
 		page.Tags = extractTags(page.Metadata)
+		page.Categories = extractStringList(page.Metadata, "categories")
 		page.Date = extractDate(page.Metadata)
 		page.Draft = extractDraft(page.Metadata)
 
@@ -195,24 +197,28 @@ func detectSection(relPath string) string {
 }
 
 func extractTags(metadata map[string]any) []string {
-	tagsVal, ok := metadata["tags"]
+	return extractStringList(metadata, "tags")
+}
+
+func extractStringList(metadata map[string]any, key string) []string {
+	listVal, ok := metadata[key]
 	if !ok {
 		return nil
 	}
 
-	tagList, ok := tagsVal.([]any)
+	list, ok := listVal.([]any)
 	if !ok {
 		return nil
 	}
 
-	var tags []string
-	for _, t := range tagList {
-		if s, ok := t.(string); ok && s != "" {
-			tags = append(tags, s)
+	var result []string
+	for _, item := range list {
+		if s, ok := item.(string); ok && s != "" {
+			result = append(result, s)
 		}
 	}
-	sort.Strings(tags)
-	return tags
+	sort.Strings(result)
+	return result
 }
 
 func extractDate(metadata map[string]any) string {
@@ -311,10 +317,18 @@ func PostsBySection(posts []Page, section string) []Page {
 }
 
 func PostsByTag(posts []Page, tag string) []Page {
+	return PostsByListValue(posts, tag, func(p Page) []string { return p.Tags })
+}
+
+func PostsByCategory(posts []Page, category string) []Page {
+	return PostsByListValue(posts, category, func(p Page) []string { return p.Categories })
+}
+
+func PostsByListValue(posts []Page, value string, extract func(Page) []string) []Page {
 	var result []Page
 	for _, p := range posts {
-		for _, t := range p.Tags {
-			if t == tag {
+		for _, v := range extract(p) {
+			if v == value {
 				result = append(result, p)
 				break
 			}
@@ -324,27 +338,43 @@ func PostsByTag(posts []Page, tag string) []Page {
 }
 
 func AllTags(posts []Page) []string {
+	return AllListValues(posts, func(p Page) []string { return p.Tags })
+}
+
+func AllCategories(posts []Page) []string {
+	return AllListValues(posts, func(p Page) []string { return p.Categories })
+}
+
+func AllListValues(posts []Page, extract func(Page) []string) []string {
 	seen := make(map[string]bool)
-	var tags []string
+	var values []string
 
 	for _, p := range posts {
-		for _, t := range p.Tags {
-			if !seen[t] {
-				seen[t] = true
-				tags = append(tags, t)
+		for _, v := range extract(p) {
+			if !seen[v] {
+				seen[v] = true
+				values = append(values, v)
 			}
 		}
 	}
 
-	sort.Strings(tags)
-	return tags
+	sort.Strings(values)
+	return values
 }
 
 func TagIndex(posts []Page) map[string][]Page {
+	return ListIndex(posts, func(p Page) []string { return p.Tags })
+}
+
+func CategoryIndex(posts []Page) map[string][]Page {
+	return ListIndex(posts, func(p Page) []string { return p.Categories })
+}
+
+func ListIndex(posts []Page, extract func(Page) []string) map[string][]Page {
 	index := make(map[string][]Page)
 	for _, p := range posts {
-		for _, t := range p.Tags {
-			index[t] = append(index[t], p)
+		for _, v := range extract(p) {
+			index[v] = append(index[v], p)
 		}
 	}
 	return index

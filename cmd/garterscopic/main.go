@@ -14,6 +14,22 @@ import (
 
 var version = "0.1.0"
 
+// titleCase capitalizes the first letter of each word. This replaces the
+// deprecated strings.Title without adding external dependencies.
+func titleCase(s string) string {
+	if s == "" {
+		return s
+	}
+	words := strings.Fields(s)
+	for i, w := range words {
+		if w == "" {
+			continue
+		}
+		words[i] = strings.ToUpper(w[:1]) + w[1:]
+	}
+	return strings.Join(words, " ")
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		printHelp()
@@ -27,6 +43,10 @@ func main() {
 		runBuild()
 	case "dev":
 		runDev()
+	case "check":
+		runCheck(os.Args[2:])
+	case "graph":
+		runGraph(os.Args[2:])
 	case "clean":
 		runClean()
 	case "init":
@@ -53,6 +73,8 @@ Usage:
 Commands:
   build           Build the site
   dev             Start the development server
+  check           Validate the project without building
+  graph           Show the resolved page/component structure
   clean           Remove generated files
   init [name]     Create a new project
   new page <name>         Create a new page
@@ -60,7 +82,11 @@ Commands:
 
 Options:
   --help, -h      Show this help
-  --version, -v   Show version`)
+  --version, -v   Show version
+
+Command flags:
+  check --verbose Show file and fix details for every finding
+  graph --json    Output the graph as JSON`)
 }
 
 func runBuild() {
@@ -108,7 +134,11 @@ func runDev() {
 
 	port := 8080
 	if len(os.Args) > 2 && os.Args[2] == "--port" && len(os.Args) > 3 {
-		fmt.Sscanf(os.Args[3], "%d", &port)
+		n, err := fmt.Sscanf(os.Args[3], "%d", &port)
+		if err != nil || n != 1 || port < 1 || port > 65535 {
+			fmt.Fprintf(os.Stderr, "Invalid port: %s (must be 1-65535)\n", os.Args[3])
+			os.Exit(1)
+		}
 	}
 
 	fmt.Printf("Garterscopic %s\n\nBuilding initial site...\n\n", version)
@@ -163,6 +193,11 @@ func runInit() {
 		name = os.Args[2]
 	}
 
+	if err := validateProjectName(name); err != nil {
+		fmt.Fprintf(os.Stderr, "Invalid project name: %v\n", err)
+		os.Exit(1)
+	}
+
 	if err := initProject(name); err != nil {
 		printError("failed to create project", err)
 		os.Exit(1)
@@ -209,7 +244,7 @@ links:
 favicon: favicon.png
 icon: icon.png
 icon_dir: assets/icon
-`, strings.Title(name)),
+`, yamlQuote(titleCase(name))),
 
 		"components/definitions.yaml": `components:
   navbar:
@@ -455,7 +490,7 @@ a:hover {
 		"assets/js/main.js": `console.log("Garterscopic site loaded!");
 `,
 
-		"README.md": "# " + strings.Title(name) + "\n\nBuilt with Garterscopic.\n\n## Commands\n\n```bash\ngarterscopic build   # Build the site\ngarterscopic dev     # Start development server\ngarterscopic clean   # Remove generated files\n```\n",
+		"README.md": "# " + titleCase(name) + "\n\nBuilt with Garterscopic.\n\n## Commands\n\n```bash\ngarterscopic build   # Build the site\ngarterscopic dev     # Start development server\ngarterscopic clean   # Remove generated files\n```\n",
 	}
 
 	for path, content := range templates {
@@ -483,6 +518,11 @@ func runNew() {
 
 	if pageType != "page" && pageType != "post" {
 		fmt.Fprintf(os.Stderr, "Unknown page type: %s (use 'page' or 'post')\n", pageType)
+		os.Exit(1)
+	}
+
+	if err := validateSlug(pageName); err != nil {
+		fmt.Fprintf(os.Stderr, "Invalid name: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -517,7 +557,7 @@ title: %s
 # %s
 
 Your content here.
-`, strings.Title(name), strings.Title(name))
+`, titleCase(name), titleCase(name))
 
 	if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
 		printError("failed to create page", err)
@@ -566,7 +606,7 @@ tags: []
 # %s
 
 Your content here.
-`, strings.Title(slug), timeNow().Format("2006-01-02"), strings.Title(slug))
+`, titleCase(slug), timeNow().Format("2006-01-02"), titleCase(slug))
 
 	if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
 		printError("failed to create post", err)
@@ -582,4 +622,38 @@ func timeNow() time.Time {
 
 func printError(msg string, err error) {
 	fmt.Fprintf(os.Stderr, "Error: %s\n\n%v\n", msg, err)
+}
+
+// validateProjectName checks that a project name is safe for use as a
+// directory name and does not contain path traversal sequences.
+func validateProjectName(name string) error {
+	if name == "" {
+		return fmt.Errorf("name must not be empty")
+	}
+	if strings.Contains(name, "..") || strings.ContainsAny(name, "/\\") {
+		return fmt.Errorf("name must not contain path separators or '..'")
+	}
+	return nil
+}
+
+// validateSlug checks that a page/post name is safe for use as a filename.
+func validateSlug(name string) error {
+	if name == "" {
+		return fmt.Errorf("name must not be empty")
+	}
+	if strings.Contains(name, "..") || strings.ContainsAny(name, "/\\:*?\"<>|") {
+		return fmt.Errorf("name contains invalid characters")
+	}
+	return nil
+}
+
+// yamlQuote wraps a string in YAML quotes if it contains characters that
+// could break YAML parsing (colons, quotes, leading/trailing spaces).
+func yamlQuote(s string) string {
+	specialChars := ":\"'[]{}>&*!|>%@`"
+	if strings.ContainsAny(s, specialChars) || strings.TrimSpace(s) != s {
+		escaped := strings.ReplaceAll(s, `"`, `""`)
+		return `"` + escaped + `"`
+	}
+	return s
 }

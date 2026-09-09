@@ -12,7 +12,15 @@ components:
         - name: Contact
           url: /contact
 
+  - name: post-list
+
   - name: content
+
+  - name: card
+    options:
+      title: About this site
+      slots:
+        default: <p>Built with <a href="https://github.com/italiatroller-1990/garterscopic">Garterscopic</a> - no Node.js required.</p>
 
   - name: footer
     options:

@@ -26,3 +26,11 @@ components:
     options:
       copyright:
         type: string
+
+  card:
+    file: card.html
+    style: styles/card.css
+    options:
+      title:
+        type: string
+        required: true

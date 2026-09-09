@@ -6,6 +6,8 @@ tags:
   - css
   - tutorial
   - web
+categories:
+  - tutorials
 ---
 
 # CSS Basics

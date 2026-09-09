@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/italiatroller-1990/garterscopic/internal/build"
@@ -19,11 +21,14 @@ type Server struct {
 	Builder    BuilderInterface
 	httpServer *http.Server
 	watcher    *Watcher
+	buildMu    sync.Mutex
 }
 
 type BuilderInterface interface {
 	Load() error
 	Build() (*build.BuildResult, error)
+	RebuildRoutes(routes []string) (*build.BuildResult, error)
+	PagesAffectedBy(changedFile string) []string
 }
 
 func New(cfg *config.SiteConfig, port int, builder BuilderInterface) *Server {
@@ -50,7 +55,9 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/.reload", s.handleReload)
 
 	s.watcher = NewWatcher(s.Config.Build.Source)
-	go s.watcher.Watch(s.rebuild)
+	go s.watcher.Watch(func(changed []string) {
+		s.rebuild(changed)
+	})
 
 	s.httpServer = &http.Server{
 		Addr:         addr,
@@ -85,6 +92,14 @@ func (s *Server) serveFile(dir string) http.HandlerFunc {
 		}
 
 		filePath := filepath.Join(dir, filepath.FromSlash(path))
+
+		// Prevent directory traversal: ensure the resolved path stays within dir.
+		absDir, _ := filepath.Abs(dir)
+		absFile, _ := filepath.Abs(filePath)
+		if !strings.HasPrefix(absFile, absDir+string(os.PathSeparator)) && absFile != absDir {
+			http.NotFound(w, r)
+			return
+		}
 
 		info, err := os.Stat(filePath)
 		if err == nil && info.IsDir() {
@@ -133,13 +148,20 @@ func (s *Server) handleReload(w http.ResponseWriter, r *http.Request) {
 	for {
 		select {
 		case <-ticker.C:
-			fmt.Fprintf(w, "data: ping\n\n")
+			if _, err := fmt.Fprintf(w, "data: ping\n\n"); err != nil {
+				return
+			}
 			flusher.Flush()
+		case <-r.Context().Done():
+			return
 		}
 	}
 }
 
-func (s *Server) rebuild() {
+func (s *Server) rebuild(changedFiles []string) {
+	s.buildMu.Lock()
+	defer s.buildMu.Unlock()
+
 	log.Println("Source changed, rebuilding...")
 
 	if err := s.Builder.Load(); err != nil {
@@ -147,13 +169,45 @@ func (s *Server) rebuild() {
 		return
 	}
 
-	result, err := s.Builder.Build()
+	result, err := s.rebuildChanged(changedFiles)
 	if err != nil {
 		log.Printf("Build error: %v", err)
 		return
 	}
 
-	log.Printf("Build complete: %d pages generated", result.PagesGenerated)
+	if len(result.RebuiltRoutes) > 0 {
+		log.Printf("Partial rebuild: %d page(s) re-rendered", len(result.RebuiltRoutes))
+	} else {
+		log.Printf("Build complete: %d pages generated", result.PagesGenerated)
+	}
+}
+
+// rebuildChanged re-renders only the pages affected by the changed files
+// when the changes are content-level (page bodies, component HTML). Global
+// changes (config, styles, layouts, new/removed files) fall back to a full
+// build via the builder's route-set check.
+func (s *Server) rebuildChanged(changedFiles []string) (*build.BuildResult, error) {
+	globalExts := map[string]bool{
+		".yaml": true, ".yml": true,
+	}
+
+	var routes []string
+	sawGlobal := false
+	for _, file := range changedFiles {
+		ext := strings.ToLower(filepath.Ext(file))
+		if globalExts[ext] || strings.Contains(file, "layouts") || strings.Contains(file, "page-types") {
+			sawGlobal = true
+			break
+		}
+		routes = append(routes, s.Builder.PagesAffectedBy(file)...)
+	}
+
+	if sawGlobal || len(routes) == 0 {
+		return s.Builder.Build()
+	}
+
+	// Style or asset changes are cheap to refresh alongside the pages.
+	return s.Builder.RebuildRoutes(routes)
 }
 
 func getContentType(path string) string {

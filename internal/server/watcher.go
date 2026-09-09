@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -13,7 +14,7 @@ import (
 type Watcher struct {
 	watcher  *fsnotify.Watcher
 	dir      string
-	callback func()
+	callback func([]string)
 	stop     chan struct{}
 }
 
@@ -24,7 +25,9 @@ func NewWatcher(dir string) *Watcher {
 	}
 }
 
-func (w *Watcher) Watch(callback func()) {
+// Watch starts watching the source directory. The callback receives the
+// (deduplicated) list of files that changed since the last invocation.
+func (w *Watcher) Watch(callback func([]string)) {
 	w.callback = callback
 
 	watcher, err := fsnotify.NewWatcher()
@@ -40,8 +43,8 @@ func (w *Watcher) Watch(callback func()) {
 		}
 
 		if info.IsDir() {
-			ext := filepath.Ext(path)
-			if ext == ".git" || ext == ".tmp" || ext == ".dist" {
+			name := info.Name()
+			if name == ".git" || name == ".tmp" || name == "dist" {
 				return filepath.SkipDir
 			}
 			return watcher.Add(path)
@@ -59,7 +62,7 @@ func (w *Watcher) run() {
 	debounce := time.NewTicker(100 * time.Millisecond)
 	defer debounce.Stop()
 
-	changed := false
+	changedFiles := make(map[string]bool)
 
 	for {
 		select {
@@ -74,7 +77,7 @@ func (w *Watcher) run() {
 				event.Op&fsnotify.Rename == fsnotify.Rename {
 
 				if w.isRelevantFile(event.Name) {
-					changed = true
+					changedFiles[event.Name] = true
 				}
 			}
 
@@ -85,9 +88,14 @@ func (w *Watcher) run() {
 			log.Printf("Watch error: %v", err)
 
 		case <-debounce.C:
-			if changed {
-				changed = false
-				w.callback()
+			if len(changedFiles) > 0 {
+				files := make([]string, 0, len(changedFiles))
+				for f := range changedFiles {
+					files = append(files, f)
+				}
+				sort.Strings(files)
+				changedFiles = make(map[string]bool)
+				w.callback(files)
 			}
 
 		case <-w.stop:

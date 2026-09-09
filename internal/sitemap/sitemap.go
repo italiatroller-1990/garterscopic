@@ -16,7 +16,9 @@ type Entry struct {
 	Priority     string
 }
 
-// Generate creates a sitemap.xml from pages
+// Generate creates a sitemap.xml from pages.
+// Draft pages are excluded. Pages with a canonical URL use it instead of
+// the derived route URL.
 func Generate(pages []pages.Page, baseURL string) string {
 	var entries []Entry
 
@@ -30,11 +32,14 @@ func Generate(pages []pages.Page, baseURL string) string {
 			continue
 		}
 
-		fullURL := strings.TrimRight(baseURL, "/") + "/" + strings.TrimLeft(page.Route, "/")
+		location := strings.TrimRight(baseURL, "/") + "/" + strings.TrimLeft(page.Route, "/")
+		if page.Canonical != "" {
+			location = page.Canonical
+		}
 
 		entry := Entry{
-			Location:     fullURL,
-			LastModified: time.Now().Format("2006-01-02"),
+			Location:     location,
+			LastModified: lastModified(page),
 			ChangeFreq:   "weekly",
 			Priority:     "0.8",
 		}
@@ -54,6 +59,18 @@ func Generate(pages []pages.Page, baseURL string) string {
 	}
 
 	return renderXML(entries)
+}
+
+// lastModified prefers the page's own date over the build time so output
+// stays stable for unchanged content.
+func lastModified(page pages.Page) string {
+	if page.Date != "" {
+		return page.Date
+	}
+	if updated, ok := page.Metadata["updated"].(string); ok && updated != "" {
+		return updated
+	}
+	return time.Now().Format("2006-01-02")
 }
 
 func renderXML(entries []Entry) string {

@@ -1,14 +1,19 @@
+// Package components loads and validates HTML component definitions.
 package components
 
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/italiatroller-1990/garterscopic/internal/config"
 	"github.com/italiatroller-1990/garterscopic/internal/yaml"
 )
 
+// Definition represents a registered HTML component with its file, optional
+// stylesheet, default position, and typed options.
 type Definition struct {
 	Name     string                      `yaml:"name"`
 	File     string                      `yaml:"file"`
@@ -45,6 +50,8 @@ type Instance struct {
 	Bindings map[string]OptionBinding `yaml:"bindings"`
 }
 
+// LoadDefinitions reads components/definitions.yaml and returns a map of
+// component name to Definition.
 func LoadDefinitions(cfg *config.SiteConfig) (map[string]Definition, error) {
 	path := cfg.SourcePath("components", "definitions.yaml")
 	data, err := os.ReadFile(path)
@@ -178,8 +185,18 @@ func (d *Definition) GetOptionType(name string) string {
 	return "string"
 }
 
+// LoadComponentHTML reads an HTML component file from the components directory.
+// Path traversal outside the components directory is rejected.
 func LoadComponentHTML(cfg *config.SiteConfig, file string) (string, error) {
 	path := cfg.SourcePath("components", file)
+
+	// Prevent directory traversal: ensure resolved path stays within components/.
+	absBase, _ := filepath.Abs(cfg.SourcePath("components"))
+	absPath, _ := filepath.Abs(path)
+	if !strings.HasPrefix(absPath, absBase+string(os.PathSeparator)) && absPath != absBase {
+		return "", fmt.Errorf("component file path %q escapes components directory", file)
+	}
+
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return "", fmt.Errorf("failed to read component file %s: %w", file, err)
@@ -207,18 +224,8 @@ func GetUsedStyles(defs map[string]Definition, instances []Instance) []string {
 		}
 	}
 
-	sortStrings(styles)
+	sort.Strings(styles)
 	return styles
-}
-
-func sortStrings(s []string) {
-	for i := 0; i < len(s); i++ {
-		for j := i + 1; j < len(s); j++ {
-			if s[i] > s[j] {
-				s[i], s[j] = s[j], s[i]
-			}
-		}
-	}
 }
 
 func NormalizeComponentName(name string) string {

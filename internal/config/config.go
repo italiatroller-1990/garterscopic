@@ -17,18 +17,84 @@ type SiteConfig struct {
 	Styles          StylesConfig     `yaml:"styles"`
 	Scripts         []ScriptConfig   `yaml:"scripts"`
 	Responsive      ResponsiveConfig `yaml:"responsive"`
-	Links           []LinkConfig     `yaml:"links"`
+	Links           LinksConfig      `yaml:"links"`
 	Favicon         string           `yaml:"favicon"`
 	Icon            string           `yaml:"icon"`
 	IconDir         string           `yaml:"icon_dir"`
 	Language        string           `yaml:"language"`
 	SEO             SEOConfig        `yaml:"seo"`
+	Sitemap         SitemapConfig    `yaml:"sitemap"`
+	Feed            FeedConfig       `yaml:"feed"`
+	Taxonomy        TaxonomyConfig   `yaml:"taxonomy"`
+	Pagination      PaginationConfig `yaml:"pagination"`
+	Gallery         GalleryConfig    `yaml:"gallery"`
+
+	// IconConfigured reports whether icon/favicon was set explicitly in the
+	// YAML (as opposed to coming from defaults). Used by validation to avoid
+	// warning about icons the user never asked for.
+	IconConfigured bool `yaml:"-"`
+}
+
+func (c *SiteConfig) UnmarshalYAML(value *yaml.Node) error {
+	type plain SiteConfig
+	var raw plain
+	if err := value.Decode(&raw); err != nil {
+		return err
+	}
+	*c = SiteConfig(raw)
+
+	for i := 0; i+1 < len(value.Content); i += 2 {
+		keyNode, valNode := value.Content[i], value.Content[i+1]
+		if keyNode.Kind == yaml.ScalarNode && valNode != nil && valNode.Tag != "!!null" {
+			if keyNode.Value == "icon" || keyNode.Value == "favicon" {
+				c.IconConfigured = true
+			}
+		}
+	}
+	return nil
 }
 
 type ResponsiveConfig struct {
 	Mobile  string `yaml:"mobile"`
 	Tablet  string `yaml:"tablet"`
 	Desktop string `yaml:"desktop"`
+}
+
+// LinksConfig accepts either the legacy list form
+//
+//	links:
+//	  - name: Home
+//	    url: /
+//
+// or the map form with fail_on_broken:
+//
+//	links:
+//	  fail_on_broken: true
+//	  entries:
+//	    - name: Home
+//	      url: /
+type LinksConfig struct {
+	Entries      []LinkConfig
+	FailOnBroken bool
+}
+
+func (l *LinksConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var list []LinkConfig
+	if err := unmarshal(&list); err == nil {
+		l.Entries = list
+		return nil
+	}
+
+	var raw struct {
+		FailOnBroken bool         `yaml:"fail_on_broken"`
+		Entries      []LinkConfig `yaml:"entries"`
+	}
+	if err := unmarshal(&raw); err != nil {
+		return err
+	}
+	l.FailOnBroken = raw.FailOnBroken
+	l.Entries = raw.Entries
+	return nil
 }
 
 type LinkConfig struct {
@@ -60,6 +126,30 @@ type StylesConfig struct {
 type ScriptConfig struct {
 	Path string `yaml:"src"`
 	Type string `yaml:"type"`
+}
+
+type SitemapConfig struct {
+	Enabled bool `yaml:"enabled"`
+}
+
+type FeedConfig struct {
+	Enabled bool   `yaml:"enabled"`
+	Path    string `yaml:"path"`
+	Title   string `yaml:"title"`
+}
+
+type TaxonomyConfig struct {
+	Tags       bool `yaml:"tags"`
+	Categories bool `yaml:"categories"`
+}
+
+type PaginationConfig struct {
+	Enabled bool `yaml:"enabled"`
+	PerPage int  `yaml:"per_page"`
+}
+
+type GalleryConfig struct {
+	Enabled bool `yaml:"enabled"`
 }
 
 func Load(path string) (*SiteConfig, error) {
@@ -116,6 +206,15 @@ func setDefaults(cfg *SiteConfig) {
 	}
 	if cfg.IconDir == "" {
 		cfg.IconDir = "assets/icon"
+	}
+	if cfg.Feed.Path == "" {
+		cfg.Feed.Path = "/feed.xml"
+	}
+	if cfg.Feed.Title == "" {
+		cfg.Feed.Title = cfg.Name
+	}
+	if cfg.Pagination.PerPage <= 0 {
+		cfg.Pagination.PerPage = 10
 	}
 }
 
