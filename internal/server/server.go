@@ -86,7 +86,27 @@ func (s *Server) serveFile(dir string) http.HandlerFunc {
 
 		filePath := filepath.Join(dir, filepath.FromSlash(path))
 
-		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		info, err := os.Stat(filePath)
+		if err == nil && info.IsDir() {
+			// Directory-style route: serve its index.html
+			filePath = filepath.Join(filePath, "index.html")
+			info, err = os.Stat(filePath)
+		}
+		if os.IsNotExist(err) && filepath.Ext(filePath) == "" {
+			// Extensionless URL: try <path>/index.html and <path>.html
+			candidates := []string{
+				filepath.Join(filePath, "index.html"),
+				filePath + ".html",
+			}
+			for _, candidate := range candidates {
+				if stat, statErr := os.Stat(candidate); statErr == nil && !stat.IsDir() {
+					filePath = candidate
+					info, err = stat, nil
+					break
+				}
+			}
+		}
+		if err != nil || info.IsDir() {
 			http.NotFound(w, r)
 			return
 		}
