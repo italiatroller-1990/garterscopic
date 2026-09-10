@@ -8,8 +8,14 @@ site_dir: site
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Site Configuration: site-config.md
   - Project Structure: project-structure.md
   - Components: components.md
+  - Layouts: layouts.md
+  - Page Types: page-types.md
+  - Posts: posts.md
+  - SEO and Standards: seo.md
+  - CLI Commands: commands.md
   - Packaging and Releases: packaging.md
   - Architecture:
       - Performance: architecture/performance.md

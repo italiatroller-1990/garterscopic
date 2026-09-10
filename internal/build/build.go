@@ -354,8 +354,21 @@ func (b *Builder) renderPage(page pages.Page, hasStyles bool, contentInfo bindin
 		layoutName = b.Config.DefaultLayout
 	}
 
+	// Frontmatter layout override takes precedence over page type layout.
+	if page.Layout != "" {
+		layoutName = page.Layout
+	}
+
 	if page.AutoLayout != "" {
 		layoutName = page.AutoLayout
+	}
+
+	// Handle the pagelist built-in layout: filter pages by directory and
+	// expose them through metadata so the post-list component renders them.
+	if layoutName == "pagelist" {
+		b.applyPagelist(&page, metadata)
+		// Use the default layout since there is no pagelist.yaml file.
+		layoutName = b.Config.DefaultLayout
 	}
 
 	layout, exists := b.Layouts[layoutName]
@@ -375,6 +388,56 @@ func (b *Builder) renderPage(page pages.Page, hasStyles bool, contentInfo bindin
 	}
 
 	return b.wrapInDocument(htmlBody, page, metadata, hasStyles), nil
+}
+
+// hasLayout reports whether a named layout exists.
+func (b *Builder) hasLayout(name string) bool {
+	_, ok := b.Layouts[name]
+	return ok
+}
+
+// applyPagelist filters all pages by the configured directory and stores
+// the result in metadata["pagelist_pages"] so that post-list can render it.
+func (b *Builder) applyPagelist(page *pages.Page, metadata map[string]any) {
+	cfg := page.PagelistConfig
+	if cfg == nil {
+		cfg = &pages.PagelistConfig{}
+	}
+
+	// Default dir: the listing page's own directory.
+	dir := cfg.Dir
+	if dir == "" {
+		pagesDir := b.Config.SourcePath("pages")
+		rel, _ := filepath.Rel(pagesDir, page.SourcePath)
+		dir = filepath.Dir(rel)
+		if dir == "." {
+			dir = ""
+		}
+	}
+
+	pagesDir := b.Config.SourcePath("pages")
+	filtered, err := pages.FilterPagesByDir(b.Pages, pagesDir, dir, page.SourcePath)
+	if err != nil {
+		metadata["pagelist_pages"] = []map[string]any{}
+		return
+	}
+
+	// Sort.
+	pages.SortPages(filtered, cfg.Sort, cfg.Order)
+
+	// Limit.
+	if cfg.Limit > 0 && len(filtered) > cfg.Limit {
+		filtered = filtered[:cfg.Limit]
+	}
+
+	// Convert to data maps.
+	data := make([]map[string]any, 0, len(filtered))
+	for _, p := range filtered {
+		data = append(data, pages.PagelistPageData(p))
+	}
+
+	metadata["pagelist_pages"] = data
+	metadata["pagelist_dir"] = dir
 }
 
 func (b *Builder) renderLayout(layout layouts.Layout, page pages.Page, metadata map[string]any, contentInfo binding.ContentInfo) (string, error) {
@@ -993,11 +1056,15 @@ func (b *Builder) galleryComponents() []map[string]any {
 }
 
 // renderPostList renders the page's "posts" metadata as a simple linked
-// list. It keeps auto-generated listing pages usable out of the box without
-// forcing a visual design; users can build their own listing components
-// from the posts binding instead.
+// list. When "pagelist_pages" is present (from the pagelist built-in layout),
+// it is used instead of "posts". It keeps auto-generated listing pages usable
+// out of the box without forcing a visual design; users can build their own
+// listing components from the posts binding instead.
 func (b *Builder) renderPostList(metadata map[string]any, resolver *binding.Resolver) (string, error) {
 	postsAny, _ := metadata["posts"].([]map[string]any)
+	if len(postsAny) == 0 {
+		postsAny, _ = metadata["pagelist_pages"].([]map[string]any)
+	}
 	if len(postsAny) == 0 {
 		return "", nil
 	}

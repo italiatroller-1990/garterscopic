@@ -142,11 +142,18 @@ garterscopic dev
 
 ## Features
 
-- **Simple**: Plain HTML, YAML, Markdown, CSS
-- **Fast**: Built in Go
-- **Self-contained**: Single binary, no runtime dependencies
-- **Flexible**: Components compose through YAML
-- **Production-ready**: Atomic builds, deterministic output
+- **HTML Components** — Plain HTML with `{{ placeholder }}` syntax and typed options
+- **YAML Layouts** — Declare component composition with position-based regions
+- **Page Type Schemas** — Validate frontmatter with required fields, types, and defaults
+- **Blog Posts** — Sections, tags, categories, and paginated listings
+- **SEO** — Meta tags, Open Graph, Twitter Cards, sitemap, robots.txt, RSS feed
+- **Slots** — Named and default slot content injection into components
+- **Data Binding** — Declarative binding from frontmatter, page, site, posts, sections, and tags
+- **Draft Support** — Exclude pages from output with `draft: true`
+- **Live Reload** — Development server with automatic rebuild and browser refresh
+- **Incremental Builds** — Dependency graph for targeted rebuilds
+- **Validation** — Pre-build checks for types, required fields, broken links
+- **Zero Dependencies** — Single binary, no Node.js, no npm
 
 ## Project Structure
 
@@ -169,12 +176,16 @@ my-site/
 
 | Command | Description |
 |---------|-------------|
-| `garterscopic init name` | Create a new project |
+| `garterscopic init [name]` | Create a new project |
 | `garterscopic build` | Build the site |
 | `garterscopic dev` | Start development server |
+| `garterscopic check` | Validate the project without building |
+| `garterscopic graph` | Show resolved page/component structure |
 | `garterscopic clean` | Remove generated files |
-| `garterscopic new page name` | Create a new page |
-| `garterscopic new post name` | Create a new post |
+| `garterscopic new page <name>` | Create a new page |
+| `garterscopic new post [section/]slug` | Create a new post |
+
+See [CLI Commands](docs/commands.md) for full details on all commands and flags.
 
 ## JavaScript
 

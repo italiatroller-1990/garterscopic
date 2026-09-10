@@ -2,22 +2,50 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://garterscopic.example.com/</loc>
-         <lastmod>2026-09-07</lastmod>
+         <lastmod>2026-09-10</lastmod>
+    </url>
+    <url>
+         <loc>https://garterscopic.example.com/commands/</loc>
+         <lastmod>2026-09-10</lastmod>
     </url>
     <url>
          <loc>https://garterscopic.example.com/components/</loc>
-         <lastmod>2026-09-07</lastmod>
+         <lastmod>2026-09-10</lastmod>
     </url>
     <url>
          <loc>https://garterscopic.example.com/getting-started/</loc>
-         <lastmod>2026-09-07</lastmod>
+         <lastmod>2026-09-10</lastmod>
+    </url>
+    <url>
+         <loc>https://garterscopic.example.com/layouts/</loc>
+         <lastmod>2026-09-10</lastmod>
+    </url>
+    <url>
+         <loc>https://garterscopic.example.com/packaging/</loc>
+         <lastmod>2026-09-10</lastmod>
+    </url>
+    <url>
+         <loc>https://garterscopic.example.com/page-types/</loc>
+         <lastmod>2026-09-10</lastmod>
+    </url>
+    <url>
+         <loc>https://garterscopic.example.com/posts/</loc>
+         <lastmod>2026-09-10</lastmod>
     </url>
     <url>
          <loc>https://garterscopic.example.com/project-structure/</loc>
-         <lastmod>2026-09-07</lastmod>
+         <lastmod>2026-09-10</lastmod>
+    </url>
+    <url>
+         <loc>https://garterscopic.example.com/seo/</loc>
+         <lastmod>2026-09-10</lastmod>
+    </url>
+    <url>
+         <loc>https://garterscopic.example.com/site-config/</loc>
+         <lastmod>2026-09-10</lastmod>
     </url>
     <url>
          <loc>https://garterscopic.example.com/architecture/performance/</loc>
-         <lastmod>2026-09-07</lastmod>
+         <lastmod>2026-09-10</lastmod>
     </url>
 </urlset>

@@ -14,7 +14,7 @@
         <link rel="prev" href="../project-structure/">
       
       
-        <link rel="next" href="../architecture/performance/">
+        <link rel="next" href="../layouts/">
       
       
         
@@ -223,6 +223,25 @@
   
   
     <li class="md-tabs__item">
+      <a href="../site-config/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Site Configuration
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
       <a href="../project-structure/" class="md-tabs__link">
         
   
@@ -251,6 +270,120 @@
     
   
   Components
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../layouts/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Layouts
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../page-types/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Page Types
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../posts/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Posts
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../seo/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  SEO and Standards
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../commands/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  CLI Commands
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../packaging/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Packaging and Releases
 
       </a>
     </li>
@@ -385,6 +518,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../site-config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Site Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../project-structure/" class="md-nav__link">
         
   
@@ -472,6 +632,45 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#placeholder-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Placeholder Syntax
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Placeholder Syntax">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unsupported-constructs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unsupported Constructs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#creating-components" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -491,6 +690,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Defining Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#component-definition-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component Definition Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -498,6 +714,122 @@
     <span class="md-ellipsis">
       
         Supported Option Types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Supported Option Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#string" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        string
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#number" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        number
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#boolean" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        boolean
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#links" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        links
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#object" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        object
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#date" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        date
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#html" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        html
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#required-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required Options
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#default-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Default Values
       
     </span>
   </a>
@@ -513,6 +845,234 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Using Components in Layouts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#instance-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Instance Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#component-position" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component Position
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Component Position">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#supported-positions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Positions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#position-resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Position Resolution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#important" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-binding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Binding
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data Binding">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#site-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Site Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#important_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#component-styles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component Styles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Component Styles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-styles-are-handled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How Styles Are Handled
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#global-styles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Styles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#important_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#component-rendering-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component Rendering Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Security">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#html-escaping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTML Escaping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#raw-html" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Raw HTML
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#important-security-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important Security Rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -526,10 +1086,211 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Validation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#validation-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation Checks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backwards-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backwards Compatibility
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
       
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../layouts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layouts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../page-types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Page Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../posts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Posts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../seo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SEO and Standards
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Commands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../packaging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Packaging and Releases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -554,10 +1315,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
             
   
   
@@ -575,8 +1336,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -643,8 +1404,32 @@
 
 <h1 id="components">Components<a class="headerlink" href="#components" title="Permanent link">&para;</a></h1>
 <p>Components are ordinary HTML files with simple <code>{{ placeholder }}</code> syntax.</p>
+<p><strong>Core philosophy:</strong> Components are HTML, not templates. YAML declares data and configuration. HTML defines presentation.</p>
+<h2 id="placeholder-syntax">Placeholder Syntax<a class="headerlink" href="#placeholder-syntax" title="Permanent link">&para;</a></h2>
+<p>Use simple placeholders in your HTML components:</p>
+<div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>{{ title }}<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>{{ description }}<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+</code></pre></div>
+<h3 id="rules">Rules<a class="headerlink" href="#rules" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Placeholders use the syntax: <code>{{ name }}</code></li>
+<li>Whitespace around identifiers is accepted: <code>{{ title }}</code>, <code>{{title}}</code>, <code>{{ title   }}</code></li>
+<li>Placeholder names must be simple identifiers (alphanumeric and underscore)</li>
+<li>Do NOT use expressions, functions, filters, or transformations</li>
+</ul>
+<h3 id="unsupported-constructs">Unsupported Constructs<a class="headerlink" href="#unsupported-constructs" title="Permanent link">&para;</a></h3>
+<p>The component system deliberately does NOT support:</p>
+<div class="highlight"><pre><span></span><code>{{ if something }}     ✗ No conditionals
+{{ for item in ... }}  ✗ No loops
+{{ foo.bar() }}        ✗ No functions
+{{ value | filter }}   ✗ No filters
+{{ a + b }}            ✗ No expressions
+{{ eval(&quot;code&quot;) }}     ✗ No evaluation
+</code></pre></div>
+<p>This constraint is intentional and preserves the principle that <strong>HTML remains HTML.</strong></p>
+<hr />
 <h2 id="creating-components">Creating Components<a class="headerlink" href="#creating-components" title="Permanent link">&para;</a></h2>
-<p>Create <code>components/navbar.html</code>:</p>
+<p>Create a simple HTML file like <code>components/navbar.html</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">nav</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;navbar&quot;</span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="nt">a</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;navbar-logo&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;/&quot;</span><span class="p">&gt;</span>{{ logo }}<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="nt">ul</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;navbar-links&quot;</span><span class="p">&gt;</span>
@@ -652,89 +1437,553 @@
     <span class="p">&lt;/</span><span class="nt">ul</span><span class="p">&gt;</span>
 <span class="p">&lt;/</span><span class="nt">nav</span><span class="p">&gt;</span>
 </code></pre></div>
+<hr />
 <h2 id="defining-components">Defining Components<a class="headerlink" href="#defining-components" title="Permanent link">&para;</a></h2>
-<p>Create <code>components/definitions.yaml</code>:</p>
+<p>Create <code>components/definitions.yaml</code> to declare your components:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">components</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">navbar</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">navbar.html</span>
 <span class="w">    </span><span class="nt">style</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">navbar.css</span>
+<span class="w">    </span><span class="nt">position</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">top</span>
+
 <span class="w">    </span><span class="nt">options</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">logo</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="w">        </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
 <span class="w">      </span><span class="nt">links</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">list</span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">links</span>
+<span class="w">        </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 </code></pre></div>
-<h2 id="supported-option-types">Supported Option Types<a class="headerlink" href="#supported-option-types" title="Permanent link">&para;</a></h2>
+<h3 id="component-definition-fields">Component Definition Fields<a class="headerlink" href="#component-definition-fields" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
+<th>Field</th>
 <th>Type</th>
+<th>Required</th>
 <th>Description</th>
-<th>Example</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>string</code></td>
-<td>Plain text (HTML-escaped)</td>
-<td><code>"Hello"</code></td>
+<td><code>file</code></td>
+<td>string</td>
+<td>Yes</td>
+<td>Path to component HTML file (relative to <code>components/</code>)</td>
 </tr>
 <tr>
-<td><code>number</code></td>
-<td>Numeric values</td>
-<td><code>42</code>, <code>3.14</code></td>
+<td><code>style</code></td>
+<td>string</td>
+<td>No</td>
+<td>Path to component stylesheet (relative to <code>styles/</code>)</td>
 </tr>
 <tr>
-<td><code>boolean</code></td>
-<td>true/false</td>
-<td><code>true</code></td>
+<td><code>position</code></td>
+<td>string</td>
+<td>No</td>
+<td>Default position: <code>top</code>, <code>bottom</code>, <code>left</code>, <code>right</code>, <code>center</code></td>
 </tr>
 <tr>
-<td><code>list</code></td>
-<td>List of values</td>
-<td><code>["a", "b"]</code></td>
-</tr>
-<tr>
-<td><code>object</code></td>
-<td>Key-value pairs</td>
-<td><code>{text: "Click"}</code></td>
-</tr>
-<tr>
-<td><code>date</code></td>
-<td>Date string</td>
-<td><code>"2024-01-01"</code></td>
-</tr>
-<tr>
-<td><code>html</code></td>
-<td>Raw HTML (not escaped)</td>
-<td><code>"&lt;b&gt;Bold&lt;/b&gt;"</code></td>
+<td><code>options</code></td>
+<td>object</td>
+<td>No</td>
+<td>Map of option definitions</td>
 </tr>
 </tbody>
 </table>
+<hr />
+<h2 id="supported-option-types">Supported Option Types<a class="headerlink" href="#supported-option-types" title="Permanent link">&para;</a></h2>
+<h3 id="string">string<a class="headerlink" href="#string" title="Permanent link">&para;</a></h3>
+<p>Plain text value (HTML-escaped by default).</p>
+<div class="highlight"><pre><span></span><code><span class="nt">options</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">title</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="w">    </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+<p>Usage:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">components</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hero</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Welcome</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">my</span><span class="nv"> </span><span class="s">site&quot;</span>
+</code></pre></div>
+<h3 id="number">number<a class="headerlink" href="#number" title="Permanent link">&para;</a></h3>
+<p>Numeric value (integer or floating-point).</p>
+<div class="highlight"><pre><span></span><code><span class="nt">options</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">count</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">number</span>
+<span class="w">    </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+</code></pre></div>
+<p>Usage:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">components</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pagination</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">      </span><span class="nt">page_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+</code></pre></div>
+<h3 id="boolean">boolean<a class="headerlink" href="#boolean" title="Permanent link">&para;</a></h3>
+<p>True/false value.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">options</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">enabled</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">boolean</span>
+<span class="w">    </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</code></pre></div>
+<p>Usage:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">components</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">feature</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+<h3 id="list">list<a class="headerlink" href="#list" title="Permanent link">&para;</a></h3>
+<p>A list of values (YAML array).</p>
+<p>For example, placeholder links that literally does nothing!</p>
+<div class="highlight"><pre><span></span><code><span class="nt">options</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">links</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">list</span>
+<span class="w">    </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+<p>Usage in layout:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">components</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">navbar</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">links</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Home</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">About</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Contact</span>
+</code></pre></div>
+<p>HTML component receives the list as-is. By default, list items are joined with commas and HTML-escaped.</p>
+<h3 id="links">links<a class="headerlink" href="#links" title="Permanent link">&para;</a></h3>
+<p>A list of navigation links, rendered as HTML <code>&lt;li&gt;&lt;a&gt;</code> elements.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">options</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">links</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">links</span>
+</code></pre></div>
+<p>Each item is an object with <code>name</code> (display text) and <code>url</code> (href).</p>
+<p>Usage in layout:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">components</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">navbar</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">links</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Home</span>
+<span class="w">          </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">About</span>
+<span class="w">          </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/about/</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Blog</span>
+<span class="w">          </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/blog/</span>
+</code></pre></div>
+<p>Renders as:</p>
+<div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;/&quot;</span><span class="p">&gt;</span>Home<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;/about/&quot;</span><span class="p">&gt;</span>About<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;/blog/&quot;</span><span class="p">&gt;</span>Blog<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+</code></pre></div>
+<h3 id="object">object<a class="headerlink" href="#object" title="Permanent link">&para;</a></h3>
+<p>Key-value pairs (YAML mapping).</p>
+<div class="highlight"><pre><span></span><code><span class="nt">options</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">object</span>
+</code></pre></div>
+<p>Usage:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">components</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">card</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">author</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Alice</span>
+<span class="w">        </span><span class="nt">date</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2024-01-15&quot;</span>
+<span class="w">        </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">important</span>
+</code></pre></div>
+<h3 id="date">date<a class="headerlink" href="#date" title="Permanent link">&para;</a></h3>
+<p>Date value (passed as a string).</p>
+<div class="highlight"><pre><span></span><code><span class="nt">options</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">published</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">date</span>
+<span class="w">    </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+<p>Usage:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">components</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">post-header</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">published</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2024-01-15&quot;</span>
+</code></pre></div>
+<h3 id="html">html<a class="headerlink" href="#html" title="Permanent link">&para;</a></h3>
+<p>Raw HTML (NOT escaped).</p>
+<div class="highlight"><pre><span></span><code><span class="nt">options</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">body</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">html</span>
+</code></pre></div>
+<p>Usage:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">components</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hero</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">body</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;strong&gt;Bold&lt;/strong&gt;</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">&lt;em&gt;italic&lt;/em&gt;&quot;</span>
+</code></pre></div>
+<p><strong>Important:</strong> Use the <code>html</code> type only for trusted content. User input should use <code>string</code> type instead.</p>
+<hr />
+<h2 id="required-options">Required Options<a class="headerlink" href="#required-options" title="Permanent link">&para;</a></h2>
+<p>Mark options that must be provided:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">components</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">post-header</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">post-header.html</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">title</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="w">        </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="w">      </span><span class="nt">date</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">date</span>
+<span class="w">        </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="w">      </span><span class="nt">excerpt</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+</code></pre></div>
+<p>Missing required options will produce a clear validation error:</p>
+<div class="highlight"><pre><span></span><code>Error: invalid component option
+
+Component: post-header
+Option: title
+
+Expected:
+  string (required)
+
+Received:
+  missing
+
+Fix:
+  Add &quot;title&quot; to the component options.
+</code></pre></div>
+<hr />
+<h2 id="default-values">Default Values<a class="headerlink" href="#default-values" title="Permanent link">&para;</a></h2>
+<p>Provide defaults for optional options:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">components</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">footer</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">footer.html</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">copyright</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="w">        </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;©</span><span class="nv"> </span><span class="s">2024&quot;</span>
+
+<span class="w">      </span><span class="nt">color</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="w">        </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#333333&quot;</span>
+</code></pre></div>
+<p>If an option is not provided and has a default, the default is used.</p>
+<hr />
 <h2 id="using-components-in-layouts">Using Components in Layouts<a class="headerlink" href="#using-components-in-layouts" title="Permanent link">&para;</a></h2>
 <p>In <code>layouts/default.yaml</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
 
 <span class="nt">components</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">navbar</span>
+<span class="w">    </span><span class="nt">position</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">top</span>
 <span class="w">    </span><span class="nt">options</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">logo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">My Site</span>
-<span class="w">      </span><span class="nt">links</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Home,About,Contact&quot;</span>
+<span class="w">      </span><span class="nt">from</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">links</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">site.links</span>
 
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">content</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hero</span>
+<span class="w">    </span><span class="nt">position</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">center</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Welcome</span>
+<span class="w">      </span><span class="nt">subtitle</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build fast, static sites</span>
 
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">footer</span>
+<span class="w">    </span><span class="nt">position</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bottom</span>
 <span class="w">    </span><span class="nt">options</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">copyright</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2024&quot;</span>
+<span class="w">      </span><span class="nt">copyright</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;©</span><span class="nv"> </span><span class="s">2024</span><span class="nv"> </span><span class="s">My</span><span class="nv"> </span><span class="s">Site&quot;</span>
 </code></pre></div>
+<h3 id="instance-fields">Instance Fields<a class="headerlink" href="#instance-fields" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>Component name (from definitions)</td>
+</tr>
+<tr>
+<td><code>position</code></td>
+<td>string</td>
+<td>Optional position override (see Component Position section)</td>
+</tr>
+<tr>
+<td><code>options</code></td>
+<td>object</td>
+<td>Option values for this instance</td>
+</tr>
+<tr>
+<td><code>bindings</code></td>
+<td>object</td>
+<td>Optional data bindings (see Data Binding section)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="component-position">Component Position<a class="headerlink" href="#component-position" title="Permanent link">&para;</a></h2>
+<p>Components can declare a logical position in the layout.</p>
+<h3 id="supported-positions">Supported Positions<a class="headerlink" href="#supported-positions" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>top</code>: Header/navigation region</li>
+<li><code>bottom</code>: Footer region</li>
+<li><code>left</code>: Sidebar/aside region</li>
+<li><code>right</code>: Secondary sidebar/aside region</li>
+<li><code>center</code>: Main content region (default)</li>
+</ul>
+<h3 id="position-resolution">Position Resolution<a class="headerlink" href="#position-resolution" title="Permanent link">&para;</a></h3>
+<p>Position is resolved in this order:</p>
+<ol>
+<li>Instance-level position (in layout YAML)</li>
+<li>Component definition default position</li>
+<li>Default: <code>center</code></li>
+</ol>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">components</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># Sidebar definition with default position</span>
+<span class="w">  </span><span class="nt">sidebar</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sidebar.html</span>
+<span class="w">    </span><span class="nt">position</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">left</span>
+
+<span class="w">  </span><span class="c1"># In layout, use default position (left)</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sidebar</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Navigation</span>
+
+<span class="w">  </span><span class="c1"># Or override with a different position</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sidebar</span>
+<span class="w">    </span><span class="nt">position</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">right</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Related Links</span>
+</code></pre></div>
+<h3 id="important">Important<a class="headerlink" href="#important" title="Permanent link">&para;</a></h3>
+<p>Position is a <strong>logical layout region</strong>, not CSS styling. The <code>position: left</code> value does NOT automatically apply <code>position: absolute; left: 0;</code> or similar CSS.</p>
+<p>Your stylesheets must define how each position renders visually (via CSS Grid, Flexbox, CSS Positions, or other techniques).</p>
+<hr />
+<h2 id="data-binding">Data Binding<a class="headerlink" href="#data-binding" title="Permanent link">&para;</a></h2>
+<p>Extend component options with declarative data binding.</p>
+<p>Supported data sources:</p>
+<ul>
+<li><code>frontmatter.*</code> – Page frontmatter fields</li>
+<li><code>page.*</code> – Page metadata (route, url, type, etc.)</li>
+<li><code>site.*</code> – Site configuration (name, base_url, links, responsive widths, etc.)</li>
+</ul>
+<h4 id="site-fields">Site Fields<a class="headerlink" href="#site-fields" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Binding</th>
+<th>Returns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>site.name</code></td>
+<td>Site name from <code>site.yaml</code></td>
+</tr>
+<tr>
+<td><code>site.base_url</code></td>
+<td>Base URL from <code>site.yaml</code></td>
+</tr>
+<tr>
+<td><code>site.links</code></td>
+<td>Navigation links list</td>
+</tr>
+<tr>
+<td><code>site.mobile_width</code></td>
+<td>Mobile breakpoint (default: <code>768px</code>)</td>
+</tr>
+<tr>
+<td><code>site.tablet_width</code></td>
+<td>Tablet breakpoint (default: <code>1024px</code>)</td>
+</tr>
+<tr>
+<td><code>site.desktop_width</code></td>
+<td>Desktop breakpoint (default: <code>1200px</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h3>
+<p>In <code>layouts/post.yaml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">post</span>
+
+<span class="nt">components</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">post-header</span>
+<span class="w">    </span><span class="nt">bindings</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">title</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">from</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">frontmatter.title</span>
+
+<span class="w">      </span><span class="nt">date</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">from</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">frontmatter.published_date</span>
+
+<span class="w">      </span><span class="nt">author</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">from</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">frontmatter.author</span>
+
+<span class="w">      </span><span class="nt">url</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">from</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">page.url</span>
+
+<span class="w">      </span><span class="nt">site_name</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">from</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">site.name</span>
+</code></pre></div>
+<p>The component system will:</p>
+<ol>
+<li>Read the declared data source</li>
+<li>Look up the value in the appropriate context</li>
+<li>Pass the resolved value to the component option</li>
+<li>Validate the type matches the component definition</li>
+</ol>
+<h3 id="important_1">Important<a class="headerlink" href="#important_1" title="Permanent link">&para;</a></h3>
+<p>Data binding is declarative data plumbing, NOT a template language.</p>
+<p>These are <strong>supported:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="nt">bindings</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">title</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">from</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">frontmatter.title</span>
+
+<span class="w">  </span><span class="nt">date</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">from</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">page.created_at</span>
+
+<span class="w">  </span><span class="nt">site_name</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">from</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">site.name</span>
+</code></pre></div>
+<p>These are <strong>NOT supported:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="nt">bindings</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">title</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">from</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">frontmatter.title.toUpperCase()  ✗ No method calls</span>
+
+<span class="w">  </span><span class="nt">display</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">from</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">site.name + &quot;!&quot;                  ✗ No expressions</span>
+
+<span class="w">  </span><span class="nt">content</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">from</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">if(condition) { value1 } else { value2 }  ✗ No conditionals</span>
+</code></pre></div>
+<hr />
+<h2 id="component-styles">Component Styles<a class="headerlink" href="#component-styles" title="Permanent link">&para;</a></h2>
+<p>A component may reference a stylesheet:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">components</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">navbar</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">navbar.html</span>
+<span class="w">    </span><span class="nt">style</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">navbar.css</span>
+</code></pre></div>
+<h3 id="how-styles-are-handled">How Styles Are Handled<a class="headerlink" href="#how-styles-are-handled" title="Permanent link">&para;</a></h3>
+<ol>
+<li>The builder detects which components are used on a page</li>
+<li>It resolves their stylesheets</li>
+<li>It includes them exactly once per build</li>
+<li>It preserves deterministic ordering (alphabetical by path)</li>
+</ol>
+<h3 id="global-styles">Global Styles<a class="headerlink" href="#global-styles" title="Permanent link">&para;</a></h3>
+<p>For site-wide styling, use <code>styles/global.css</code>. It's included on all pages.</p>
+<h3 id="important_2">Important<a class="headerlink" href="#important_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Do NOT use CSS-in-JS, Tailwind, Sass, CSS Modules, or other build-time CSS transformations (unless you add them separately)</li>
+<li>Stylesheets are copied as-is to the output</li>
+<li>The builder does NOT minify or transform CSS</li>
+</ul>
+<hr />
+<h2 id="component-rendering-model">Component Rendering Model<a class="headerlink" href="#component-rendering-model" title="Permanent link">&para;</a></h2>
+<p>The component system follows this conceptual pipeline:</p>
+<div class="highlight"><pre><span></span><code>YAML layout declaration
+        ↓
+Component definition lookup
+        ↓
+Component instance creation
+        ↓
+Data binding resolution
+        ↓
+Type validation
+        ↓
+HTML placeholder substitution
+        ↓
+HTML output
+</code></pre></div>
+<p>Each step is independent:</p>
+<ul>
+<li><strong>YAML</strong> declares which components to use and how to configure them</li>
+<li><strong>Definitions</strong> describe the component's structure and expected options</li>
+<li><strong>Instance</strong> is a specific use of the component in a layout</li>
+<li><strong>Data binding</strong> resolves external data sources to component options</li>
+<li><strong>Validation</strong> ensures types and required fields are correct</li>
+<li><strong>Substitution</strong> replaces <code>{{ placeholder }}</code> with values</li>
+<li><strong>Output</strong> is the final HTML</li>
+</ul>
+<p>The HTML component itself knows nothing about data sources or the binding system. It only contains static HTML with placeholders.</p>
+<hr />
+<h2 id="security">Security<a class="headerlink" href="#security" title="Permanent link">&para;</a></h2>
+<p>Component rendering is safe by default.</p>
+<h3 id="html-escaping">HTML Escaping<a class="headerlink" href="#html-escaping" title="Permanent link">&para;</a></h3>
+<p>All values are HTML-escaped <strong>by default</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">options</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;&quot;</span>
+</code></pre></div>
+<p>Renders as:</p>
+<div class="highlight"><pre><span></span><code><span class="ni">&amp;lt;</span>script<span class="ni">&amp;gt;</span>alert(&#39;xss&#39;)<span class="ni">&amp;lt;</span>/script<span class="ni">&amp;gt;</span>
+</code></pre></div>
+<p>NOT:</p>
+<div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">script</span><span class="p">&gt;</span><span class="nx">alert</span><span class="p">(</span><span class="s1">&#39;xss&#39;</span><span class="p">)&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+</code></pre></div>
+<h3 id="raw-html">Raw HTML<a class="headerlink" href="#raw-html" title="Permanent link">&para;</a></h3>
+<p>Only the <code>html</code> type permits raw HTML:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">components</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">hero</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hero.html</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">body</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">html</span>
+
+<span class="c1"># In layout:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hero</span>
+<span class="w">  </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">body</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;strong&gt;Bold&lt;/strong&gt;&quot;</span>
+</code></pre></div>
+<h3 id="important-security-rules">Important Security Rules<a class="headerlink" href="#important-security-rules" title="Permanent link">&para;</a></h3>
+<ul>
+<li>NEVER execute component contents</li>
+<li>NEVER execute YAML</li>
+<li>NEVER execute frontmatter</li>
+<li>NEVER evaluate placeholders as code</li>
+<li>NEVER use <code>eval</code>, <code>exec</code>, shell execution, or dynamic plugins for component rendering</li>
+</ul>
+<p>User input should use <code>string</code> type (which escapes HTML). Use <code>html</code> type only for content you control.</p>
+<hr />
 <h2 id="no-programming-logic">No Programming Logic<a class="headerlink" href="#no-programming-logic" title="Permanent link">&para;</a></h2>
-<p>Components should only contain:
-- Static HTML
-- <code>{{ placeholder }}</code> tags for dynamic values
-- No <code>{{ if }}</code>, <code>{{ for }}</code>, <code>{{ range }}</code>
-- No filters or transforms
-- No custom expressions</p>
-<p>The goal is <strong>HTML remains HTML</strong>.</p>
+<p>Components should only contain:</p>
+<ul>
+<li>Static HTML</li>
+<li><code>{{ placeholder }}</code> tags for dynamic values</li>
+<li>No <code>{{ if }}</code>, <code>{{ for }}</code>, <code>{{ range }}</code></li>
+<li>No filters or transforms</li>
+<li>No custom expressions</li>
+</ul>
+<p>The goal is <strong>HTML remains HTML.</strong></p>
+<p>If you need conditional rendering or loops, use:</p>
+<ol>
+<li>Multiple component instances with different options</li>
+<li>Pre-computed values in frontmatter</li>
+<li>Separate page types for different layouts</li>
+<li>CSS for styling variations</li>
+</ol>
+<hr />
+<h2 id="validation">Validation<a class="headerlink" href="#validation" title="Permanent link">&para;</a></h2>
+<p>The builder validates components at build time.</p>
+<h3 id="validation-checks">Validation Checks<a class="headerlink" href="#validation-checks" title="Permanent link">&para;</a></h3>
+<ul>
+<li>✓ Component definition exists</li>
+<li>✓ Component HTML file exists</li>
+<li>✓ Component stylesheet (if referenced) exists</li>
+<li>✓ Required options are provided</li>
+<li>✓ Option values match declared types</li>
+<li>✓ Unknown options are rejected</li>
+<li>✓ Placeholder names are valid identifiers</li>
+<li>✓ All placeholders are resolved to options</li>
+<li>✓ Data bindings reference valid data sources</li>
+<li>✓ Position values are valid</li>
+</ul>
+<hr />
+<h2 id="backwards-compatibility">Backwards Compatibility<a class="headerlink" href="#backwards-compatibility" title="Permanent link">&para;</a></h2>
+<p>Existing component projects remain valid.</p>
+<p>The <code>{{ placeholder }}</code> syntax is unchanged. Existing component definitions continue to work.</p>
+<p>New features like <code>position</code>, <code>bindings</code>, and <code>data binding</code> are optional and do not affect existing components.</p>
+<p>If you have existing components without these features, they work exactly as before.</p>
 
 
 

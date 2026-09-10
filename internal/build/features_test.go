@@ -395,3 +395,459 @@ func TestPagesAffectedBy(t *testing.T) {
 		t.Errorf("expected '/' among pages affected by navbar.html, got %v", affected)
 	}
 }
+
+// --- Pagelist integration tests ---
+
+func createPagelistSite(t *testing.T, tmpdir string, extraConfig string) {
+	t.Helper()
+
+	os.MkdirAll(filepath.Join(tmpdir, "pages", "blog"), 0755)
+	os.MkdirAll(filepath.Join(tmpdir, "components"), 0755)
+	os.MkdirAll(filepath.Join(tmpdir, "layouts"), 0755)
+	os.MkdirAll(filepath.Join(tmpdir, "styles"), 0755)
+	os.MkdirAll(filepath.Join(tmpdir, "page-types"), 0755)
+
+	// Minimal site config.
+	siteYaml := `name: Test
+base_url: http://localhost:8080
+build:
+  source: .
+  output: dist
+default_layout: default
+default_page_type: page
+` + extraConfig
+	os.WriteFile(filepath.Join(tmpdir, "site.yaml"), []byte(siteYaml), 0644)
+
+	// Page type.
+	os.WriteFile(filepath.Join(tmpdir, "page-types", "page.yaml"), []byte(`name: page
+layout: default
+fields:
+  title:
+    type: string
+    required: true
+  description:
+    type: string
+`), 0644)
+
+	// Layout with post-list so pagelist results render.
+	os.WriteFile(filepath.Join(tmpdir, "layouts", "default.yaml"), []byte(`name: default
+components:
+  - name: post-list
+  - name: content
+`), 0644)
+
+	// Minimal components.
+	os.WriteFile(filepath.Join(tmpdir, "components", "definitions.yaml"), []byte(`components:
+  navbar:
+    file: navbar.html
+`), 0644)
+	os.WriteFile(filepath.Join(tmpdir, "components", "navbar.html"), []byte(`<nav>Nav</nav>`), 0644)
+
+	// Global style.
+	os.WriteFile(filepath.Join(tmpdir, "styles", "global.css"), []byte("body{}"), 0644)
+
+	// Blog posts.
+	os.WriteFile(filepath.Join(tmpdir, "pages", "blog", "post1.md"), []byte(`---
+type: page
+title: First Post
+date: 2026-01-15
+---
+
+First post content.
+`), 0644)
+
+	os.WriteFile(filepath.Join(tmpdir, "pages", "blog", "post2.md"), []byte(`---
+type: page
+title: Second Post
+date: 2026-02-20
+---
+
+Second post content.
+`), 0644)
+
+	os.WriteFile(filepath.Join(tmpdir, "pages", "blog", "post3.md"), []byte(`---
+type: page
+title: Third Post
+date: 2026-03-10
+---
+
+Third post content.
+`), 0644)
+
+	// Draft post (should be excluded).
+	os.WriteFile(filepath.Join(tmpdir, "pages", "blog", "draft.md"), []byte(`---
+type: page
+title: Draft Post
+draft: true
+---
+
+Draft content.
+`), 0644)
+
+	// A page outside blog (should not appear in blog listing).
+	os.WriteFile(filepath.Join(tmpdir, "pages", "about.md"), []byte(`---
+type: page
+title: About
+---
+
+About content.
+`), 0644)
+}
+
+func TestPagelistBasic(t *testing.T) {
+	tmpdir := t.TempDir()
+	createPagelistSite(t, tmpdir, "")
+
+	// The listing page uses pagelist layout.
+	os.WriteFile(filepath.Join(tmpdir, "pages", "blog", "index.md"), []byte(`---
+type: page
+layout: pagelist
+title: Blog Index
+pagelist-config:
+  dir: blog
+---
+
+# Blog
+`), 0644)
+
+	workingDir, _ := os.Getwd()
+	os.Chdir(tmpdir)
+	t.Cleanup(func() { os.Chdir(workingDir) })
+
+	cfg, _ := config.Load("site.yaml")
+	b := New(cfg)
+	b.Load()
+	result, _ := b.Build()
+
+	if result.PagesGenerated == 0 {
+		t.Fatal("expected pages to be generated")
+	}
+
+	data, err := os.ReadFile(filepath.Join(tmpdir, "dist", "blog", "index.html"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	content := string(data)
+
+	// Should contain links to the 3 published blog posts.
+	for _, want := range []string{"First Post", "Second Post", "Third Post"} {
+		if !strings.Contains(content, want) {
+			t.Errorf("expected pagelist to contain %q", want)
+		}
+	}
+
+	// Should NOT contain the draft post.
+	if strings.Contains(content, "Draft Post") {
+		t.Error("pagelist should not contain draft posts")
+	}
+
+	// Should NOT contain the about page.
+	if strings.Contains(content, "About") {
+		t.Error("pagelist should not contain pages from other directories")
+	}
+}
+
+func TestPagelistExcludesCurrentPage(t *testing.T) {
+	tmpdir := t.TempDir()
+	createPagelistSite(t, tmpdir, "")
+
+	// The listing page itself.
+	os.WriteFile(filepath.Join(tmpdir, "pages", "blog", "index.md"), []byte(`---
+type: page
+layout: pagelist
+title: Blog Index
+pagelist-config:
+  dir: blog
+---
+
+# Blog
+`), 0644)
+
+	workingDir, _ := os.Getwd()
+	os.Chdir(tmpdir)
+	t.Cleanup(func() { os.Chdir(workingDir) })
+
+	cfg, _ := config.Load("site.yaml")
+	b := New(cfg)
+	b.Load()
+	b.Build()
+
+	data, _ := os.ReadFile(filepath.Join(tmpdir, "dist", "blog", "index.html"))
+	content := string(data)
+
+	// The listing page should not list itself.
+	if strings.Contains(content, `<a href="/blog/">Blog Index</a>`) {
+		t.Error("pagelist should not list itself")
+	}
+}
+
+func TestPagelistSortByTitleAsc(t *testing.T) {
+	tmpdir := t.TempDir()
+	createPagelistSite(t, tmpdir, "")
+
+	os.WriteFile(filepath.Join(tmpdir, "pages", "blog", "index.md"), []byte(`---
+type: page
+layout: pagelist
+title: Blog Index
+pagelist-config:
+  dir: blog
+  sort: title
+  order: asc
+---
+
+# Blog
+`), 0644)
+
+	workingDir, _ := os.Getwd()
+	os.Chdir(tmpdir)
+	t.Cleanup(func() { os.Chdir(workingDir) })
+
+	cfg, _ := config.Load("site.yaml")
+	b := New(cfg)
+	b.Load()
+	b.Build()
+
+	data, _ := os.ReadFile(filepath.Join(tmpdir, "dist", "blog", "index.html"))
+	content := string(data)
+
+	// In ascending title order: First, Second, Third.
+	idxFirst := strings.Index(content, "First Post")
+	idxSecond := strings.Index(content, "Second Post")
+	idxThird := strings.Index(content, "Third Post")
+
+	if idxFirst < 0 || idxSecond < 0 || idxThird < 0 {
+		t.Fatal("expected all three posts in output")
+	}
+	if idxFirst > idxSecond || idxSecond > idxThird {
+		t.Error("expected ascending title order: First < Second < Third")
+	}
+}
+
+func TestPagelistSortByDateDesc(t *testing.T) {
+	tmpdir := t.TempDir()
+	createPagelistSite(t, tmpdir, "")
+
+	os.WriteFile(filepath.Join(tmpdir, "pages", "blog", "index.md"), []byte(`---
+type: page
+layout: pagelist
+title: Blog Index
+pagelist-config:
+  dir: blog
+  sort: date
+  order: desc
+---
+
+# Blog
+`), 0644)
+
+	workingDir, _ := os.Getwd()
+	os.Chdir(tmpdir)
+	t.Cleanup(func() { os.Chdir(workingDir) })
+
+	cfg, _ := config.Load("site.yaml")
+	b := New(cfg)
+	b.Load()
+	b.Build()
+
+	data, _ := os.ReadFile(filepath.Join(tmpdir, "dist", "blog", "index.html"))
+	content := string(data)
+
+	// In descending date order: Third (Mar), Second (Feb), First (Jan).
+	idxFirst := strings.Index(content, "First Post")
+	idxSecond := strings.Index(content, "Second Post")
+	idxThird := strings.Index(content, "Third Post")
+
+	if idxFirst < 0 || idxSecond < 0 || idxThird < 0 {
+		t.Fatal("expected all three posts in output")
+	}
+	if idxThird > idxSecond || idxSecond > idxFirst {
+		t.Error("expected descending date order: Third > Second > First")
+	}
+}
+
+func TestPagelistLimit(t *testing.T) {
+	tmpdir := t.TempDir()
+	createPagelistSite(t, tmpdir, "")
+
+	os.WriteFile(filepath.Join(tmpdir, "pages", "blog", "index.md"), []byte(`---
+type: page
+layout: pagelist
+title: Blog Index
+pagelist-config:
+  dir: blog
+  sort: title
+  order: asc
+  limit: 2
+---
+
+# Blog
+`), 0644)
+
+	workingDir, _ := os.Getwd()
+	os.Chdir(tmpdir)
+	t.Cleanup(func() { os.Chdir(workingDir) })
+
+	cfg, _ := config.Load("site.yaml")
+	b := New(cfg)
+	b.Load()
+	b.Build()
+
+	data, _ := os.ReadFile(filepath.Join(tmpdir, "dist", "blog", "index.html"))
+	content := string(data)
+
+	// Only 2 of 3 posts should appear.
+	if strings.Contains(content, "First Post") && strings.Contains(content, "Second Post") && strings.Contains(content, "Third Post") {
+		t.Error("expected limit to restrict to 2 posts")
+	}
+}
+
+func TestPagelistNestedDir(t *testing.T) {
+	tmpdir := t.TempDir()
+	createPagelistSite(t, tmpdir, "")
+
+	// Add a nested post.
+	os.MkdirAll(filepath.Join(tmpdir, "pages", "blog", "linux"), 0755)
+	os.WriteFile(filepath.Join(tmpdir, "pages", "blog", "linux", "intro.md"), []byte(`---
+type: page
+title: Linux Intro
+---
+
+Linux content.
+`), 0644)
+
+	os.WriteFile(filepath.Join(tmpdir, "pages", "blog", "index.md"), []byte(`---
+type: page
+layout: pagelist
+title: Blog Index
+pagelist-config:
+  dir: blog
+---
+
+# Blog
+`), 0644)
+
+	workingDir, _ := os.Getwd()
+	os.Chdir(tmpdir)
+	t.Cleanup(func() { os.Chdir(workingDir) })
+
+	cfg, _ := config.Load("site.yaml")
+	b := New(cfg)
+	b.Load()
+	b.Build()
+
+	data, _ := os.ReadFile(filepath.Join(tmpdir, "dist", "blog", "index.html"))
+	content := string(data)
+
+	// Should include the nested page.
+	if !strings.Contains(content, "Linux Intro") {
+		t.Error("expected nested page 'Linux Intro' in pagelist output")
+	}
+}
+
+func TestPagelistDefaultDir(t *testing.T) {
+	tmpdir := t.TempDir()
+	createPagelistSite(t, tmpdir, "")
+
+	// No explicit dir: should default to the listing page's own directory.
+	os.WriteFile(filepath.Join(tmpdir, "pages", "blog", "index.md"), []byte(`---
+type: page
+layout: pagelist
+title: Blog Index
+---
+
+# Blog
+`), 0644)
+
+	workingDir, _ := os.Getwd()
+	os.Chdir(tmpdir)
+	t.Cleanup(func() { os.Chdir(workingDir) })
+
+	cfg, _ := config.Load("site.yaml")
+	b := New(cfg)
+	b.Load()
+	b.Build()
+
+	data, _ := os.ReadFile(filepath.Join(tmpdir, "dist", "blog", "index.html"))
+	content := string(data)
+
+	// Should list other pages in blog/ but not itself.
+	for _, want := range []string{"First Post", "Second Post", "Third Post"} {
+		if !strings.Contains(content, want) {
+			t.Errorf("expected %q in default-dir pagelist", want)
+		}
+	}
+}
+
+func TestPagelistPathTraversalRejected(t *testing.T) {
+	tmpdir := t.TempDir()
+	createPagelistSite(t, tmpdir, "")
+
+	os.WriteFile(filepath.Join(tmpdir, "pages", "blog", "index.md"), []byte(`---
+type: page
+layout: pagelist
+title: Blog Index
+pagelist-config:
+  dir: ../../etc
+---
+
+# Blog
+`), 0644)
+
+	workingDir, _ := os.Getwd()
+	os.Chdir(tmpdir)
+	t.Cleanup(func() { os.Chdir(workingDir) })
+
+	cfg, _ := config.Load("site.yaml")
+	b := New(cfg)
+	b.Load()
+	result, err := b.Build()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// The page should still be generated (with empty list), not crash.
+	if result.PagesGenerated == 0 {
+		t.Fatal("expected page to be generated even with invalid dir")
+	}
+
+	data, _ := os.ReadFile(filepath.Join(tmpdir, "dist", "blog", "index.html"))
+	content := string(data)
+
+	// Should not contain any file paths from outside pages/.
+	if strings.Contains(content, "/etc") {
+		t.Error("pagelist should not expose files outside pages directory")
+	}
+}
+
+func TestPagelistEmptyDir(t *testing.T) {
+	tmpdir := t.TempDir()
+	createPagelistSite(t, tmpdir, "")
+
+	os.MkdirAll(filepath.Join(tmpdir, "pages", "empty"), 0755)
+	os.WriteFile(filepath.Join(tmpdir, "pages", "empty", "index.md"), []byte(`---
+type: page
+layout: pagelist
+title: Empty List
+pagelist-config:
+  dir: empty
+---
+
+# Empty
+`), 0644)
+
+	workingDir, _ := os.Getwd()
+	os.Chdir(tmpdir)
+	t.Cleanup(func() { os.Chdir(workingDir) })
+
+	cfg, _ := config.Load("site.yaml")
+	b := New(cfg)
+	b.Load()
+	result, err := b.Build()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if result.PagesGenerated == 0 {
+		t.Fatal("expected page to be generated for empty dir")
+	}
+}
