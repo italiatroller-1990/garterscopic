@@ -188,29 +188,29 @@ func runClean() {
 }
 
 func runInit() {
-	name := "my-site"
+	dir := "my-site"
 	if len(os.Args) > 2 {
-		name = os.Args[2]
+		dir = os.Args[2]
 	}
 
-	if err := validateProjectName(name); err != nil {
+	if err := validateProjectName(filepath.Base(dir)); err != nil {
 		fmt.Fprintf(os.Stderr, "Invalid project name: %v\n", err)
 		os.Exit(1)
 	}
 
-	if err := initProject(name); err != nil {
+	if err := initProject(dir); err != nil {
 		printError("failed to create project", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Created new project: %s/\n\n", name)
+	fmt.Printf("Created new project: %s/\n\n", dir)
 	fmt.Println("To get started:")
-	fmt.Printf("  cd %s\n", name)
+	fmt.Printf("  cd %s\n", dir)
 	fmt.Println("  garterscopic build")
 }
 
-func initProject(name string) error {
-	dir := name
+func initProject(dir string) error {
+	name := filepath.Base(dir)
 
 	templates := map[string]string{
 		"site.yaml": fmt.Sprintf(`name: %s
