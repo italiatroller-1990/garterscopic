@@ -1,8 +1,11 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strconv"
 
 	"gopkg.in/yaml.v3"
 )
@@ -216,6 +219,65 @@ func setDefaults(cfg *SiteConfig) {
 	if cfg.Pagination.PerPage <= 0 {
 		cfg.Pagination.PerPage = 10
 	}
+}
+
+// ValidateResponsive checks that the responsive breakpoint configuration is
+// valid: values are non-empty, valid CSS lengths, and ordered logically
+// (mobile < tablet < desktop).
+func (c *SiteConfig) ValidateResponsive() error {
+	if c.Responsive.Mobile == "" {
+		return fmt.Errorf("responsive.mobile is empty")
+	}
+	if c.Responsive.Tablet == "" {
+		return fmt.Errorf("responsive.tablet is empty")
+	}
+	if c.Responsive.Desktop == "" {
+		return fmt.Errorf("responsive.desktop is empty")
+	}
+
+	for _, field := range []struct {
+		name  string
+		value string
+	}{
+		{"mobile", c.Responsive.Mobile},
+		{"tablet", c.Responsive.Tablet},
+		{"desktop", c.Responsive.Desktop},
+	} {
+		if !isValidCSSLength(field.value) {
+			return fmt.Errorf("responsive.%s: invalid CSS length %q (expected a value like \"768px\")", field.name, field.value)
+		}
+	}
+
+	mobile := parseCSSLength(c.Responsive.Mobile)
+	tablet := parseCSSLength(c.Responsive.Tablet)
+	desktop := parseCSSLength(c.Responsive.Desktop)
+
+	if mobile >= tablet {
+		return fmt.Errorf("responsive: breakpoints must be ordered mobile < tablet < desktop, but mobile (%s) >= tablet (%s)", c.Responsive.Mobile, c.Responsive.Tablet)
+	}
+	if tablet >= desktop {
+		return fmt.Errorf("responsive: breakpoints must be ordered mobile < tablet < desktop, but tablet (%s) >= desktop (%s)", c.Responsive.Tablet, c.Responsive.Desktop)
+	}
+
+	return nil
+}
+
+// cssLengthRe matches a numeric value followed by a CSS unit.
+var cssLengthRe = regexp.MustCompile(`^\s*(\d+(?:\.\d+)?)\s*(px|rem|em|vw|vh|%)\s*$`)
+
+// isValidCSSLength reports whether s is a valid CSS length value (e.g. "768px").
+func isValidCSSLength(s string) bool {
+	return cssLengthRe.MatchString(s)
+}
+
+// parseCSSLength extracts the numeric portion of a CSS length for comparison.
+func parseCSSLength(s string) float64 {
+	m := cssLengthRe.FindStringSubmatch(s)
+	if m == nil {
+		return 0
+	}
+	v, _ := strconv.ParseFloat(m[1], 64)
+	return v
 }
 
 func (c *SiteConfig) SourcePath(parts ...string) string {

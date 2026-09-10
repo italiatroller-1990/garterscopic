@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/italiatroller-1990/garterscopic/internal/components"
+	"github.com/italiatroller-1990/garterscopic/internal/pages"
 )
 
 func TestRenderComponentHTML(t *testing.T) {
@@ -319,6 +320,36 @@ func TestRenderLinksType(t *testing.T) {
 	}
 	if !contains(result, "<li><a href=\"/contact\">Contact</a></li>") {
 		t.Errorf("links type: expected Contact link, got %q", result)
+	}
+}
+
+func TestRenderSEOMetaTagsIncludesViewport(t *testing.T) {
+	r := New(map[string]components.Definition{})
+	page := &pages.Page{Title: "Test"}
+
+	tags := r.RenderSEOMetaTags(page, "")
+	if !contains(tags, `<meta name="viewport" content="width=device-width, initial-scale=1">`) {
+		t.Error("expected viewport meta tag in rendered SEO tags")
+	}
+}
+
+func TestRenderSEOMetaTagsExclViewport(t *testing.T) {
+	r := New(map[string]components.Definition{})
+	page := &pages.Page{Title: "Test"}
+
+	tags := r.RenderSEOMetaTagsExclViewport(page, "", true)
+	if contains(tags, `name="viewport"`) {
+		t.Error("expected viewport meta tag to be excluded")
+	}
+}
+
+func TestRenderSEOMetaTagsExclViewportFalse(t *testing.T) {
+	r := New(map[string]components.Definition{})
+	page := &pages.Page{Title: "Test"}
+
+	tags := r.RenderSEOMetaTagsExclViewport(page, "", false)
+	if !contains(tags, `name="viewport"`) {
+		t.Error("expected viewport meta tag to be included when excludeViewport=false")
 	}
 }
 

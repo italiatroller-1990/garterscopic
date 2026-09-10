@@ -259,15 +259,25 @@ func (r *Renderer) formatObjectValue(value any) string {
 	return strings.Join(parts, " ")
 }
 
-// RenderSEOMetaTags generates meta tags for a page
+// RenderSEOMetaTags generates meta tags for a page, always including the
+// viewport meta tag.
 func (r *Renderer) RenderSEOMetaTags(page *pages.Page, baseURL string) string {
+	return r.RenderSEOMetaTagsExclViewport(page, baseURL, false)
+}
+
+// RenderSEOMetaTagsExclViewport generates meta tags for a page. When
+// excludeViewport is true, the viewport meta tag is omitted (used when the
+// body already contains one to avoid duplication).
+func (r *Renderer) RenderSEOMetaTagsExclViewport(page *pages.Page, baseURL string, excludeViewport bool) string {
 	var tags []string
 
 	// Meta charset (always included)
 	tags = append(tags, `<meta charset="utf-8">`)
 
-	// Viewport (always included for mobile)
-	tags = append(tags, `<meta name="viewport" content="width=device-width, initial-scale=1">`)
+	// Viewport (always included for mobile, unless caller says to skip)
+	if !excludeViewport {
+		tags = append(tags, `<meta name="viewport" content="width=device-width, initial-scale=1">`)
+	}
 
 	// Language
 	tags = append(tags, fmt.Sprintf(`<meta http-equiv="Content-Language" content="en">`))

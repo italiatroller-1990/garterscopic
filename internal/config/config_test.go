@@ -191,3 +191,161 @@ gallery:
 		t.Error("expected gallery.enabled true")
 	}
 }
+
+func TestResponsiveConfigParsed(t *testing.T) {
+	content := `
+name: Test
+responsive:
+  mobile: "690px"
+  tablet: "820px"
+  desktop: "1000px"
+`
+	cfg, err := Load(writeTemp(t, "site.yaml", content))
+	if err != nil {
+		t.Fatalf("failed to load config: %v", err)
+	}
+
+	if cfg.Responsive.Mobile != "690px" {
+		t.Errorf("expected mobile '690px', got '%s'", cfg.Responsive.Mobile)
+	}
+	if cfg.Responsive.Tablet != "820px" {
+		t.Errorf("expected tablet '820px', got '%s'", cfg.Responsive.Tablet)
+	}
+	if cfg.Responsive.Desktop != "1000px" {
+		t.Errorf("expected desktop '1000px', got '%s'", cfg.Responsive.Desktop)
+	}
+}
+
+func TestResponsiveConfigDefaults(t *testing.T) {
+	cfg, err := Load(writeTemp(t, "site.yaml", "name: Test\n"))
+	if err != nil {
+		t.Fatalf("failed to load config: %v", err)
+	}
+
+	if cfg.Responsive.Mobile != "768px" {
+		t.Errorf("expected default mobile '768px', got '%s'", cfg.Responsive.Mobile)
+	}
+	if cfg.Responsive.Tablet != "1024px" {
+		t.Errorf("expected default tablet '1024px', got '%s'", cfg.Responsive.Tablet)
+	}
+	if cfg.Responsive.Desktop != "1200px" {
+		t.Errorf("expected default desktop '1200px', got '%s'", cfg.Responsive.Desktop)
+	}
+}
+
+func TestResponsiveValidationOrdering(t *testing.T) {
+	tests := []struct {
+		name    string
+		cfg     SiteConfig
+		wantErr bool
+	}{
+		{
+			name: "valid ordering",
+			cfg: SiteConfig{
+				Responsive: ResponsiveConfig{Mobile: "690px", Tablet: "820px", Desktop: "1000px"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "default ordering",
+			cfg: SiteConfig{
+				Responsive: ResponsiveConfig{Mobile: "768px", Tablet: "1024px", Desktop: "1200px"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid - mobile >= tablet",
+			cfg: SiteConfig{
+				Responsive: ResponsiveConfig{Mobile: "900px", Tablet: "500px", Desktop: "1000px"},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid - tablet >= desktop",
+			cfg: SiteConfig{
+				Responsive: ResponsiveConfig{Mobile: "690px", Tablet: "1200px", Desktop: "1000px"},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid - mobile == tablet",
+			cfg: SiteConfig{
+				Responsive: ResponsiveConfig{Mobile: "800px", Tablet: "800px", Desktop: "1000px"},
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.cfg.ValidateResponsive()
+			if tt.wantErr && err == nil {
+				t.Error("expected validation error, got none")
+			}
+			if !tt.wantErr && err != nil {
+				t.Errorf("unexpected validation error: %v", err)
+			}
+		})
+	}
+}
+
+func TestResponsiveValidationInvalidCSSLength(t *testing.T) {
+	tests := []struct {
+		name  string
+		value string
+	}{
+		{"no unit", "768"},
+		{"letters", "mobile"},
+		{"empty", ""},
+		{"negative", "-100px"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg := SiteConfig{
+				Responsive: ResponsiveConfig{
+					Mobile:  tt.value,
+					Tablet:  "820px",
+					Desktop: "1000px",
+				},
+			}
+			err := cfg.ValidateResponsive()
+			if err == nil {
+				t.Errorf("expected validation error for %q, got none", tt.value)
+			}
+		})
+	}
+}
+
+func TestResponsiveValidationRemUnits(t *testing.T) {
+	cfg := SiteConfig{
+		Responsive: ResponsiveConfig{Mobile: "30rem", Tablet: "50rem", Desktop: "80rem"},
+	}
+	if err := cfg.ValidateResponsive(); err != nil {
+		t.Errorf("expected rem units to be valid, got: %v", err)
+	}
+}
+
+func TestIsCSSLength(t *testing.T) {
+	tests := []struct {
+		value string
+		valid bool
+	}{
+		{"768px", true},
+		{"10.5rem", true},
+		{"50em", true},
+		{"100vw", true},
+		{"80%", true},
+		{"  768px  ", true},
+		{"768", false},
+		{"px", false},
+		{"", false},
+		{"abc", false},
+	}
+
+	for _, tt := range tests {
+		if got := isValidCSSLength(tt.value); got != tt.valid {
+			t.Errorf("isValidCSSLength(%q) = %v, want %v", tt.value, got, tt.valid)
+		}
+	}
+}

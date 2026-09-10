@@ -177,6 +177,10 @@ func (b *Builder) Build() (*BuildResult, error) {
 		return nil, fmt.Errorf("failed to load styles: %w", err)
 	}
 
+	// Prepend responsive CSS custom properties so they are always available.
+	responsiveCSS := styles.GenerateResponsiveCSS(b.Config)
+	combinedCSS = append([]byte(responsiveCSS), combinedCSS...)
+
 	allContent := append(b.Pages, b.Posts...)
 
 	sort.Slice(allContent, func(i, j int) bool {
@@ -611,8 +615,10 @@ func (b *Builder) wrapInDocument(body string, page pages.Page, metadata map[stri
 		faviconTag = fmt.Sprintf(`<link rel="icon" href="/%s/%s">`, b.Config.IconDir, iconFile)
 	}
 
-	// Generate SEO meta tags
-	seoMetaTags := b.Renderer.RenderSEOMetaTags(&page, b.Config.BaseURL)
+	// Generate SEO meta tags, omitting the viewport tag when the body
+	// already contains one (avoid duplicate viewport declarations).
+	hasViewport := strings.Contains(body, `name="viewport"`) || strings.Contains(body, `name='viewport'`)
+	seoMetaTags := b.Renderer.RenderSEOMetaTagsExclViewport(&page, b.Config.BaseURL, hasViewport)
 
 	return fmt.Sprintf(`<!doctype html>
 <html lang="%s">
@@ -1143,6 +1149,8 @@ func (b *Builder) RebuildRoutes(routes []string) (*BuildResult, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to load styles: %w", err)
 	}
+	responsiveCSS := styles.GenerateResponsiveCSS(b.Config)
+	combinedCSS = append([]byte(responsiveCSS), combinedCSS...)
 	hasStyles := len(combinedCSS) > 0
 	contentInfo := b.buildContentInfo()
 
@@ -1177,6 +1185,8 @@ func (b *Builder) RegenerateStyles() (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("failed to load styles: %w", err)
 	}
+	responsiveCSS := styles.GenerateResponsiveCSS(b.Config)
+	combinedCSS = append([]byte(responsiveCSS), combinedCSS...)
 	if len(combinedCSS) == 0 {
 		return 0, nil
 	}

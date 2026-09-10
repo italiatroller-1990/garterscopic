@@ -3,6 +3,7 @@ package styles
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/italiatroller-1990/garterscopic/internal/config"
@@ -102,5 +103,72 @@ func TestCopyStyles(t *testing.T) {
 	}
 	if string(data) != "body{}" {
 		t.Errorf("expected 'body{}', got %q", string(data))
+	}
+}
+
+func TestGenerateResponsiveCSS(t *testing.T) {
+	cfg := &config.SiteConfig{
+		Responsive: config.ResponsiveConfig{
+			Mobile:  "690px",
+			Tablet:  "820px",
+			Desktop: "1000px",
+		},
+	}
+
+	css := GenerateResponsiveCSS(cfg)
+
+	for _, want := range []string{
+		"--gs-mobile: 690px",
+		"--gs-tablet: 820px",
+		"--gs-desktop: 1000px",
+		":root {",
+	} {
+		if !strings.Contains(css, want) {
+			t.Errorf("expected CSS to contain %q, got:\n%s", want, css)
+		}
+	}
+}
+
+func TestGenerateResponsiveCSSDefaults(t *testing.T) {
+	cfg := &config.SiteConfig{
+		Responsive: config.ResponsiveConfig{
+			Mobile:  "768px",
+			Tablet:  "1024px",
+			Desktop: "1200px",
+		},
+	}
+
+	css := GenerateResponsiveCSS(cfg)
+
+	for _, want := range []string{
+		"--gs-mobile: 768px",
+		"--gs-tablet: 1024px",
+		"--gs-desktop: 1200px",
+	} {
+		if !strings.Contains(css, want) {
+			t.Errorf("expected CSS to contain %q, got:\n%s", want, css)
+		}
+	}
+}
+
+func TestGenerateResponsiveCSSRemUnits(t *testing.T) {
+	cfg := &config.SiteConfig{
+		Responsive: config.ResponsiveConfig{
+			Mobile:  "30rem",
+			Tablet:  "50rem",
+			Desktop: "80rem",
+		},
+	}
+
+	css := GenerateResponsiveCSS(cfg)
+
+	for _, want := range []string{
+		"--gs-mobile: 30rem",
+		"--gs-tablet: 50rem",
+		"--gs-desktop: 80rem",
+	} {
+		if !strings.Contains(css, want) {
+			t.Errorf("expected CSS to contain %q, got:\n%s", want, css)
+		}
 	}
 }

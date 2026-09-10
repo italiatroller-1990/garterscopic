@@ -10,6 +10,18 @@ import (
 	"github.com/italiatroller-1990/garterscopic/internal/config"
 )
 
+// GenerateResponsiveCSS returns a CSS snippet defining custom properties
+// for the configured responsive breakpoints. The variables use the --gs-
+// prefix to avoid collisions with user-defined properties.
+func GenerateResponsiveCSS(cfg *config.SiteConfig) string {
+	return fmt.Sprintf(`:root {
+    --gs-mobile: %s;
+    --gs-tablet: %s;
+    --gs-desktop: %s;
+}
+`, cfg.Responsive.Mobile, cfg.Responsive.Tablet, cfg.Responsive.Desktop)
+}
+
 // CollectStyles deduplicates and validates the list of stylesheet paths,
 // returning only files that exist on disk.
 func CollectStyles(cfg *config.SiteConfig, componentStyles []string, globalStyles []string) ([]string, error) {

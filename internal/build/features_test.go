@@ -851,3 +851,254 @@ pagelist-config:
 		t.Fatal("expected page to be generated for empty dir")
 	}
 }
+
+// --- Responsive feature tests ---
+
+func TestViewportMetaTagGenerated(t *testing.T) {
+	tmpdir := t.TempDir()
+	createFeatureSite(t, tmpdir, "")
+
+	_, _ = buildFeatureSite(t, tmpdir)
+
+	data, err := os.ReadFile(filepath.Join(tmpdir, "dist", "index.html"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	content := string(data)
+
+	if !strings.Contains(content, `<meta name="viewport" content="width=device-width, initial-scale=1">`) {
+		t.Error("expected viewport meta tag in generated HTML")
+	}
+}
+
+func TestViewportMetaTagNotDuplicated(t *testing.T) {
+	tmpdir := t.TempDir()
+	createFeatureSite(t, tmpdir, "")
+
+	// Create a component that includes a viewport meta tag in its body.
+	os.WriteFile(filepath.Join(tmpdir, "components", "definitions.yaml"), []byte(`components:
+  navbar:
+    file: navbar.html
+    style: styles/navbar.css
+    options:
+      logo:
+        type: string
+  footer:
+    file: footer.html
+    style: styles/footer.css
+`), 0644)
+
+	// Component with a viewport tag in its HTML body.
+	os.WriteFile(filepath.Join(tmpdir, "components", "hero.html"), []byte(`<meta name="viewport" content="width=device-width, initial-scale=1"><div>Hero</div>`), 0644)
+
+	os.WriteFile(filepath.Join(tmpdir, "layouts", "default.yaml"), []byte(`name: default
+components:
+  - name: hero
+  - name: content
+  - name: footer
+`), 0644)
+
+	workingDir, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chdir(tmpdir); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.Chdir(workingDir) })
+
+	cfg, err := config.Load("site.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b := New(cfg)
+	if err := b.Load(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := b.Build(); err != nil {
+		t.Fatal(err)
+	}
+
+	data, err := os.ReadFile(filepath.Join(tmpdir, "dist", "index.html"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	content := string(data)
+
+	// Count occurrences of the viewport tag.
+	count := strings.Count(content, `name="viewport"`)
+	if count != 1 {
+		t.Errorf("expected exactly 1 viewport meta tag, got %d", count)
+	}
+}
+
+func TestResponsiveCSSGenerated(t *testing.T) {
+	tmpdir := t.TempDir()
+	createFeatureSite(t, tmpdir, `
+responsive:
+  mobile: "690px"
+  tablet: "820px"
+  desktop: "1000px"
+`)
+
+	_, _ = buildFeatureSite(t, tmpdir)
+
+	data, err := os.ReadFile(filepath.Join(tmpdir, "dist", "styles.css"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	content := string(data)
+
+	for _, want := range []string{
+		"--gs-mobile: 690px",
+		"--gs-tablet: 820px",
+		"--gs-desktop: 1000px",
+	} {
+		if !strings.Contains(content, want) {
+			t.Errorf("expected styles.css to contain %q", want)
+		}
+	}
+}
+
+func TestResponsiveCSSDefaultValues(t *testing.T) {
+	tmpdir := t.TempDir()
+	createFeatureSite(t, tmpdir, "")
+
+	_, _ = buildFeatureSite(t, tmpdir)
+
+	data, err := os.ReadFile(filepath.Join(tmpdir, "dist", "styles.css"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	content := string(data)
+
+	for _, want := range []string{
+		"--gs-mobile: 768px",
+		"--gs-tablet: 1024px",
+		"--gs-desktop: 1200px",
+	} {
+		if !strings.Contains(content, want) {
+			t.Errorf("expected styles.css to contain default %q", want)
+		}
+	}
+}
+
+func TestResponsiveInvalidOrderingFailsBuild(t *testing.T) {
+	tmpdir := t.TempDir()
+	createFeatureSite(t, tmpdir, `
+responsive:
+  mobile: "900px"
+  tablet: "500px"
+  desktop: "1000px"
+`)
+
+	workingDir, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chdir(tmpdir); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.Chdir(workingDir) })
+
+	cfg, err := config.Load("site.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b := New(cfg)
+	if err := b.Load(); err != nil {
+		t.Fatal(err)
+	}
+
+	buildErr := b.Validate()
+	if buildErr == nil {
+		t.Error("expected validation error for invalid breakpoint ordering")
+	}
+}
+
+func TestResponsiveInvalidCSSLengthFailsBuild(t *testing.T) {
+	tmpdir := t.TempDir()
+	createFeatureSite(t, tmpdir, `
+responsive:
+  mobile: "mobile"
+  tablet: "820px"
+  desktop: "1000px"
+`)
+
+	workingDir, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chdir(tmpdir); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.Chdir(workingDir) })
+
+	cfg, err := config.Load("site.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b := New(cfg)
+	if err := b.Load(); err != nil {
+		t.Fatal(err)
+	}
+
+	buildErr := b.Validate()
+	if buildErr == nil {
+		t.Error("expected validation error for invalid CSS length")
+	}
+}
+
+func TestSiteWithoutResponsiveStillBuilds(t *testing.T) {
+	tmpdir := t.TempDir()
+	createFeatureSite(t, tmpdir, "")
+
+	_, result := buildFeatureSite(t, tmpdir)
+
+	if result.PagesGenerated == 0 {
+		t.Fatal("expected pages to be generated without responsive config")
+	}
+
+	// Verify viewport tag is still generated.
+	data, err := os.ReadFile(filepath.Join(tmpdir, "dist", "index.html"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(data), `name="viewport"`) {
+		t.Error("expected viewport meta tag even without responsive config")
+	}
+}
+
+func TestResponsiveConfigDoesNotAffectUnrelatedBuilds(t *testing.T) {
+	tmpdir := t.TempDir()
+	createFeatureSite(t, tmpdir, `
+responsive:
+  mobile: "690px"
+  tablet: "820px"
+  desktop: "1000px"
+`)
+
+	_, result := buildFeatureSite(t, tmpdir)
+
+	if result.PagesGenerated == 0 {
+		t.Fatal("expected pages to be generated")
+	}
+
+	// Verify the site still works correctly with responsive config.
+	data, err := os.ReadFile(filepath.Join(tmpdir, "dist", "index.html"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	content := string(data)
+
+	// Core functionality should still work.
+	if !strings.Contains(content, `<link rel="stylesheet" href="/styles.css">`) {
+		t.Error("expected styles.css link in output")
+	}
+	if !strings.Contains(content, `<meta charset="utf-8">`) {
+		t.Error("expected charset meta tag in output")
+	}
+	if !strings.Contains(content, `<meta name="viewport"`) {
+		t.Error("expected viewport meta tag in output")
+	}
+}

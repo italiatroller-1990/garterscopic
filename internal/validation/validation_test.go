@@ -41,6 +41,11 @@ fields:
 		},
 		DefaultLayout:   "default",
 		DefaultPageType: "page",
+		Responsive: config.ResponsiveConfig{
+			Mobile:  "768px",
+			Tablet:  "1024px",
+			Desktop: "1200px",
+		},
 	}
 
 	tests := []struct {
@@ -116,6 +121,11 @@ func TestValidatePostDate(t *testing.T) {
 		Build: config.BuildConfig{
 			Source: tmpdir,
 			Output: "dist",
+		},
+		Responsive: config.ResponsiveConfig{
+			Mobile:  "768px",
+			Tablet:  "1024px",
+			Desktop: "1200px",
 		},
 	}
 
@@ -210,6 +220,11 @@ fields:
 			Source: tmpdir,
 			Output: "dist",
 		},
+		Responsive: config.ResponsiveConfig{
+			Mobile:  "768px",
+			Tablet:  "1024px",
+			Desktop: "1200px",
+		},
 	}
 
 	pts, _ := pagetypes.LoadPageTypes(cfg)
@@ -277,6 +292,11 @@ fields:
 			Source: tmpdir,
 			Output: "dist",
 		},
+		Responsive: config.ResponsiveConfig{
+			Mobile:  "768px",
+			Tablet:  "1024px",
+			Desktop: "1200px",
+		},
 	}
 
 	pts, _ := pagetypes.LoadPageTypes(cfg)
@@ -300,5 +320,59 @@ fields:
 
 	if buildErr == nil {
 		t.Error("expected validation error for missing date")
+	}
+}
+
+func TestValidateResponsiveConfig(t *testing.T) {
+	tests := []struct {
+		name     string
+		cfg      config.SiteConfig
+		wantErr  bool
+		errField string
+	}{
+		{
+			name: "valid responsive config",
+			cfg: config.SiteConfig{
+				Name:          "Test",
+				Responsive:    config.ResponsiveConfig{Mobile: "690px", Tablet: "820px", Desktop: "1000px"},
+				DefaultLayout: "default",
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid ordering",
+			cfg: config.SiteConfig{
+				Name:          "Test",
+				Responsive:    config.ResponsiveConfig{Mobile: "900px", Tablet: "500px", Desktop: "1000px"},
+				DefaultLayout: "default",
+			},
+			wantErr:  true,
+			errField: "responsive",
+		},
+		{
+			name: "invalid CSS length",
+			cfg: config.SiteConfig{
+				Name:          "Test",
+				Responsive:    config.ResponsiveConfig{Mobile: "mobile", Tablet: "820px", Desktop: "1000px"},
+				DefaultLayout: "default",
+			},
+			wantErr:  true,
+			errField: "responsive",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v := New(&tt.cfg)
+			buildErr := &BuildError{}
+			v.validateResponsiveConfig(buildErr)
+
+			if tt.wantErr && len(buildErr.Errors) == 0 {
+				t.Error("expected validation error, got none")
+			}
+			if !tt.wantErr && len(buildErr.Errors) > 0 {
+				t.Errorf("unexpected validation error: %v", buildErr.Errors[0])
+			}
+		})
 	}
 }

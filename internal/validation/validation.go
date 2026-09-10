@@ -74,6 +74,7 @@ func (v *Validator) ValidateAll(comps map[string]components.Definition, layos ma
 	buildErr := &BuildError{}
 
 	v.validateConfig(buildErr)
+	v.validateResponsiveConfig(buildErr)
 	v.validateComponentFiles(comps, buildErr)
 	v.validateLayouts(layos, comps, buildErr)
 	v.validatePageTypes(pts, layos, buildErr)
@@ -275,6 +276,16 @@ func (v *Validator) validateConfig(err *BuildError) {
 			Message: "site name is required",
 			Path:    "site.yaml",
 			Hint:    "Add 'name: Your Site Name' to site.yaml",
+		})
+	}
+}
+
+func (v *Validator) validateResponsiveConfig(err *BuildError) {
+	if validateErr := v.Config.ValidateResponsive(); validateErr != nil {
+		err.Add(&Error{
+			Message: validateErr.Error(),
+			Path:    "site.yaml",
+			Hint:    "Ensure responsive breakpoints are valid CSS lengths in mobile < tablet < desktop order",
 		})
 	}
 }

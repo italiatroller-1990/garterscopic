@@ -151,6 +151,11 @@ func TestValidateAllNoFindings(t *testing.T) {
 	cfg := &config.SiteConfig{
 		Name:  "Test",
 		Build: config.BuildConfig{Source: sourceDir, Output: "dist"},
+		Responsive: config.ResponsiveConfig{
+			Mobile:  "768px",
+			Tablet:  "1024px",
+			Desktop: "1200px",
+		},
 	}
 
 	comps := map[string]components.Definition{
