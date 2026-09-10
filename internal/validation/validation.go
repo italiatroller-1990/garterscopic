@@ -96,7 +96,7 @@ func (v *Validator) ValidateAll(comps map[string]components.Definition, layos ma
 // options and invalid positions.
 func (v *Validator) validateInstanceOptions(layos map[string]layouts.Layout, comps map[string]components.Definition, buildErr *BuildError) {
 	// Structural options that are not component options.
-	structuralOptions := map[string]bool{"slots": true}
+	structuralOptions := map[string]bool{"slots": true, "from": true}
 
 	for layoutName, layo := range layos {
 		path := filepath.Join("layouts", layoutName+".yaml")
