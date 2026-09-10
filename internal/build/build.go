@@ -155,7 +155,6 @@ func (b *Builder) SiteGraph() *graph.SiteGraph {
 	return siteGraph
 }
 
-
 func (b *Builder) Build() (*BuildResult, error) {
 	b.Graph = incremental.NewDependencyGraph()
 
@@ -1002,7 +1001,7 @@ func (b *Builder) generateGalleryPage() *pages.Page {
 	metadata := map[string]any{
 		"title":       "Components",
 		"description": "Component gallery",
-		"components":   b.galleryComponents(),
+		"components":  b.galleryComponents(),
 	}
 
 	return &pages.Page{

@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/italiatroller-1990/garterscopic/internal/components"
-	"github.com/italiatroller-1990/garterscopic/internal/markdown"
 	"github.com/italiatroller-1990/garterscopic/internal/config"
 	"github.com/italiatroller-1990/garterscopic/internal/layouts"
+	"github.com/italiatroller-1990/garterscopic/internal/markdown"
 	"github.com/italiatroller-1990/garterscopic/internal/pages"
 	"github.com/italiatroller-1990/garterscopic/internal/pagetypes"
 	"github.com/italiatroller-1990/garterscopic/internal/routing"
@@ -101,40 +101,40 @@ func (v *Validator) validateInstanceOptions(layos map[string]layouts.Layout, com
 	for layoutName, layo := range layos {
 		path := filepath.Join("layouts", layoutName+".yaml")
 
-	for _, inst := range layo.Components {
-		def, exists := comps[inst.Name]
-		if !exists || inst.Name == "content" {
-			continue
-		}
+		for _, inst := range layo.Components {
+			def, exists := comps[inst.Name]
+			if !exists || inst.Name == "content" {
+				continue
+			}
 
-		if inst.Position != "" && !layouts.ValidPosition(inst.Position) {
-			buildErr.Add(&Error{
-				Message: fmt.Sprintf("component '%s' in layout '%s': invalid position '%s' (must be: top, bottom, left, right, center)", inst.Name, layoutName, inst.Position),
-				Path:    path,
-				Hint:    "Use one of: top, bottom, left, right, center",
-			})
-		}
+			if inst.Position != "" && !layouts.ValidPosition(inst.Position) {
+				buildErr.Add(&Error{
+					Message: fmt.Sprintf("component '%s' in layout '%s': invalid position '%s' (must be: top, bottom, left, right, center)", inst.Name, layoutName, inst.Position),
+					Path:    path,
+					Hint:    "Use one of: top, bottom, left, right, center",
+				})
+			}
 
-		// Filter structural options before type validation.
-		opts := make(map[string]any, len(inst.Options))
-		for k, v := range inst.Options {
-			if !structuralOptions[k] {
-				opts[k] = v
+			// Filter structural options before type validation.
+			opts := make(map[string]any, len(inst.Options))
+			for k, v := range inst.Options {
+				if !structuralOptions[k] {
+					opts[k] = v
+				}
+			}
+
+			for _, verr := range def.ValidateOptions(components.Instance{
+				Name:     inst.Name,
+				Options:  opts,
+				Position: string(inst.Position),
+			}) {
+				buildErr.Add(&Error{
+					Message: verr.Error(),
+					Path:    path,
+					Hint:    "Fix the component options in the layout to match components/definitions.yaml",
+				})
 			}
 		}
-
-		for _, verr := range def.ValidateOptions(components.Instance{
-			Name:     inst.Name,
-			Options:  opts,
-			Position: string(inst.Position),
-		}) {
-			buildErr.Add(&Error{
-				Message: verr.Error(),
-				Path:    path,
-				Hint:    "Fix the component options in the layout to match components/definitions.yaml",
-			})
-		}
-	}
 	}
 }
 

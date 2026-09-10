@@ -196,8 +196,8 @@ func TestValidateInstanceOptions(t *testing.T) {
 	layos := map[string]layouts.Layout{
 		"default": {Name: "default", Components: []layouts.ComponentInstance{
 			{Name: "alert", Position: layouts.Position("sideways"), Options: map[string]any{
-				"message": 123,       // wrong type (allowed: int->string coercion) - use unknown opt below
-				"color":   "red",     // unknown option
+				"message": 123,   // wrong type (allowed: int->string coercion) - use unknown opt below
+				"color":   "red", // unknown option
 			}},
 			{Name: "alert", Options: map[string]any{}}, // missing required
 		}},
