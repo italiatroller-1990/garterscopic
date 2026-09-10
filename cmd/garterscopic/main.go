@@ -105,8 +105,13 @@ func runBuild() {
 	}
 
 	if buildErr := builder.Validate(); buildErr != nil {
-		fmt.Fprintf(os.Stderr, "Validation failed:\n%s\n", buildErr.Error())
-		os.Exit(1)
+		if buildErr.HasErrors() {
+			fmt.Fprintf(os.Stderr, "Validation failed:\n%s\n", buildErr.Error())
+			os.Exit(1)
+		}
+		for _, w := range buildErr.Warnings {
+			fmt.Fprintf(os.Stderr, "warning: %s\n  File: %s\n\n", w.Message, w.Path)
+		}
 	}
 
 	result, err := builder.Build()

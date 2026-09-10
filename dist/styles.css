@@ -1,3 +1,14 @@
+.card {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+}
+
+.card-title {
+    margin-top: 0;
+}
+
 .footer {
     background: #333;
     color: white;
