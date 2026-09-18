@@ -376,3 +376,55 @@ func TestResolveSiteLinksNoHighlightByDefault(t *testing.T) {
 		t.Error("expected no active flag when highlight is disabled")
 	}
 }
+
+func TestResolveSiteLinksHighlightColor(t *testing.T) {
+	links := []LinkConfig{
+		{Name: "Home", URL: "/"},
+		{Name: "About", URL: "/about/"},
+	}
+
+	resolver := NewResolver(
+		nil,
+		PageInfo{Route: "/about/"},
+		SiteInfo{Links: links, HighlightActive: true, HighlightColor: "rgb(12, 69, 11)"},
+	)
+
+	resolved, err := resolver.Resolve("site.links")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	entries := resolved.([]any)
+
+	home := entries[0].(map[string]any)
+	if _, found := home["active_style"]; found {
+		t.Error("expected no active_style on inactive link")
+	}
+
+	about := entries[1].(map[string]any)
+	if style, _ := about["active_style"].(string); style != "rgb(12, 69, 11)" {
+		t.Errorf("expected active_style %q, got %v", "rgb(12, 69, 11)", about["active_style"])
+	}
+}
+
+func TestResolveSiteLinksHighlightNoColor(t *testing.T) {
+	links := []LinkConfig{
+		{Name: "Home", URL: "/"},
+	}
+
+	resolver := NewResolver(
+		nil,
+		PageInfo{Route: "/"},
+		SiteInfo{Links: links, HighlightActive: true},
+	)
+
+	resolved, err := resolver.Resolve("site.links")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	entry := resolved.([]any)[0].(map[string]any)
+	if _, found := entry["active_style"]; found {
+		t.Error("expected no active_style when no color is configured")
+	}
+}

@@ -459,6 +459,7 @@ func (b *Builder) renderLayout(layout layouts.Layout, page pages.Page, metadata 
 			DesktopWidth:    b.Config.Responsive.Desktop,
 			Links:           convertLinks(b.Config.Links.Entries),
 			HighlightActive: b.Config.Links.HighlightActive,
+			HighlightColor:  highlightColorCSS(b.Config),
 		},
 		contentInfo,
 	)
@@ -1125,6 +1126,17 @@ func convertLinks(links []config.LinkConfig) []binding.LinkConfig {
 		result[i] = binding.LinkConfig{Name: l.Name, URL: l.URL}
 	}
 	return result
+}
+
+// highlightColorCSS returns the configured active-link highlight color in
+// CSS-ready form, or "" when unset. Invalid values yield "" here; validation
+// reports them as build errors before the build runs.
+func highlightColorCSS(cfg *config.SiteConfig) string {
+	css, err := config.NormalizeHighlightColor(cfg.Links.HighlightColor)
+	if err != nil {
+		return ""
+	}
+	return css
 }
 
 // RebuildRoutes re-renders the given routes directly into the output

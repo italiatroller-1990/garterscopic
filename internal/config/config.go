@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -70,18 +71,20 @@ type ResponsiveConfig struct {
 //	  - name: Home
 //	    url: /
 //
-// or the map form with fail_on_broken and highlight_active:
+// or the map form with fail_on_broken, highlight_active and highlight_color:
 //
 //	links:
 //	  fail_on_broken: true
 //	  highlight_active: true
+//	  highlight_color: "#ffffff"
 //	  entries:
 //	    - name: Home
 //	      url: /
 type LinksConfig struct {
 	Entries         []LinkConfig
 	FailOnBroken    bool
-	HighlightActive bool `yaml:"highlight_active"`
+	HighlightActive bool   `yaml:"highlight_active"`
+	HighlightColor  string `yaml:"highlight_color"`
 }
 
 func (l *LinksConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -94,6 +97,7 @@ func (l *LinksConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var raw struct {
 		FailOnBroken    bool         `yaml:"fail_on_broken"`
 		HighlightActive bool         `yaml:"highlight_active"`
+		HighlightColor  string       `yaml:"highlight_color"`
 		Entries         []LinkConfig `yaml:"entries"`
 	}
 	if err := unmarshal(&raw); err != nil {
@@ -101,6 +105,7 @@ func (l *LinksConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 	l.FailOnBroken = raw.FailOnBroken
 	l.HighlightActive = raw.HighlightActive
+	l.HighlightColor = raw.HighlightColor
 	l.Entries = raw.Entries
 	return nil
 }
@@ -286,6 +291,46 @@ func parseCSSLength(s string) float64 {
 	}
 	v, _ := strconv.ParseFloat(m[1], 64)
 	return v
+}
+
+// hexColorRe matches #rgb or #rrggbb.
+var hexColorRe = regexp.MustCompile(`^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$`)
+
+// rgbColorRe matches a bare "r, g, b" triplet with values 0-255.
+var rgbColorRe = regexp.MustCompile(`^\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*$`)
+
+// NormalizeHighlightColor validates a links.highlight_color value and
+// returns it in CSS-ready form: hex passes through unchanged, a bare
+// "r, g, b" triplet becomes "rgb(r, g, b)". Empty input returns "".
+func NormalizeHighlightColor(s string) (string, error) {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return "", nil
+	}
+	if hexColorRe.MatchString(s) {
+		return s, nil
+	}
+	if m := rgbColorRe.FindStringSubmatch(s); m != nil {
+		parts := make([]string, 0, 3)
+		for _, p := range m[1:] {
+			v, _ := strconv.Atoi(p)
+			if v > 255 {
+				return "", fmt.Errorf("links.highlight_color: invalid color %q (expected hex like \"#ffffff\" or rgb like \"12, 69, 11\")", s)
+			}
+			parts = append(parts, strconv.Itoa(v))
+		}
+		return "rgb(" + strings.Join(parts, ", ") + ")", nil
+	}
+	return "", fmt.Errorf("links.highlight_color: invalid color %q (expected hex like \"#ffffff\" or rgb like \"12, 69, 11\")", s)
+}
+
+// ValidateLinks checks that the links highlight configuration is valid:
+// a set highlight_color must be a valid hex or rgb color.
+func (c *SiteConfig) ValidateLinks() error {
+	if _, err := NormalizeHighlightColor(c.Links.HighlightColor); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c *SiteConfig) SourcePath(parts ...string) string {

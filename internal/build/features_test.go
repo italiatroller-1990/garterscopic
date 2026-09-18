@@ -1244,3 +1244,64 @@ func TestHighlightActiveNavLinksDisabledByDefault(t *testing.T) {
 		}
 	}
 }
+
+func TestHighlightActiveNavLinkColor(t *testing.T) {
+	tmpdir := t.TempDir()
+	createNavHighlightSite(t, tmpdir, `links:
+  highlight_active: true
+  highlight_color: "12, 69, 11"
+  entries:
+    - name: Home
+      url: /
+    - name: About
+      url: /about/
+`)
+
+	_, _ = buildFeatureSite(t, tmpdir)
+
+	aboutData, err := os.ReadFile(filepath.Join(tmpdir, "dist", "about", "index.html"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	about := string(aboutData)
+
+	if !strings.Contains(about, `<li><a href="/about/" class="active" aria-current="page" style="color: rgb(12, 69, 11);">About</a></li>`) {
+		t.Errorf("expected styled active About link, got:\n%s", about)
+	}
+	if strings.Contains(about, `style="color:`) && !strings.Contains(about, `class="active"`) {
+		t.Errorf("expected style only on the active link, got:\n%s", about)
+	}
+}
+
+func TestHighlightActiveInvalidColorFailsValidation(t *testing.T) {
+	tmpdir := t.TempDir()
+	createNavHighlightSite(t, tmpdir, `links:
+  highlight_active: true
+  highlight_color: "red"
+  entries:
+    - name: Home
+      url: /
+`)
+
+	workingDir, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chdir(tmpdir); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.Chdir(workingDir) })
+
+	cfg, err := config.Load("site.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b := New(cfg)
+	if err := b.Load(); err != nil {
+		t.Fatal(err)
+	}
+
+	if buildErr := b.Validate(); buildErr == nil || !buildErr.HasErrors() {
+		t.Error("expected validation error for invalid highlight color")
+	}
+}

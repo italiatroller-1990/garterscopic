@@ -187,6 +187,68 @@ links:
 	}
 }
 
+func TestLinksHighlightColor(t *testing.T) {
+	content := `
+name: Test
+links:
+  highlight_active: true
+  highlight_color: "#ffffff"
+  entries:
+    - name: Home
+      url: /
+`
+	cfg, err := Load(writeTemp(t, "site.yaml", content))
+	if err != nil {
+		t.Fatalf("failed to load config: %v", err)
+	}
+
+	if cfg.Links.HighlightColor != "#ffffff" {
+		t.Errorf("expected highlight_color %q, got %q", "#ffffff", cfg.Links.HighlightColor)
+	}
+}
+
+func TestNormalizeHighlightColor(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   string
+		want    string
+		wantErr bool
+	}{
+		{name: "empty", input: "", want: ""},
+		{name: "hex six", input: "#ffffff", want: "#ffffff"},
+		{name: "hex three", input: "#fff", want: "#fff"},
+		{name: "hex uppercase", input: "#FFAA00", want: "#FFAA00"},
+		{name: "rgb triplet", input: "12, 69, 11", want: "rgb(12, 69, 11)"},
+		{name: "rgb no spaces", input: "12,69,11", want: "rgb(12, 69, 11)"},
+		{name: "rgb boundary", input: "0, 0, 0", want: "rgb(0, 0, 0)"},
+		{name: "rgb max", input: "255,255,255", want: "rgb(255, 255, 255)"},
+		{name: "named color rejected", input: "red", wantErr: true},
+		{name: "short hex rejected", input: "#12", wantErr: true},
+		{name: "long hex rejected", input: "#12345", wantErr: true},
+		{name: "non-hex rejected", input: "#gggggg", wantErr: true},
+		{name: "missing hash rejected", input: "ffffff", wantErr: true},
+		{name: "rgb out of range", input: "300, 0, 0", wantErr: true},
+		{name: "rgb too few parts", input: "12, 69", wantErr: true},
+		{name: "rgb non-numeric", input: "a, b, c", wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NormalizeHighlightColor(tt.input)
+			if tt.wantErr && err == nil {
+				t.Errorf("expected error for %q, got %q", tt.input, got)
+			}
+			if !tt.wantErr {
+				if err != nil {
+					t.Errorf("unexpected error for %q: %v", tt.input, err)
+				} else if got != tt.want {
+					t.Errorf("expected %q, got %q", tt.want, got)
+				}
+			}
+		})
+	}
+}
+
 func TestFeatureSections(t *testing.T) {
 	content := `
 name: Test

@@ -75,6 +75,7 @@ func (v *Validator) ValidateAll(comps map[string]components.Definition, layos ma
 
 	v.validateConfig(buildErr)
 	v.validateResponsiveConfig(buildErr)
+	v.validateLinksConfig(buildErr)
 	v.validateComponentFiles(comps, buildErr)
 	v.validateLayouts(layos, comps, buildErr)
 	v.validatePageTypes(pts, layos, buildErr)
@@ -286,6 +287,24 @@ func (v *Validator) validateResponsiveConfig(err *BuildError) {
 			Message: validateErr.Error(),
 			Path:    "site.yaml",
 			Hint:    "Ensure responsive breakpoints are valid CSS lengths in mobile < tablet < desktop order",
+		})
+	}
+}
+
+func (v *Validator) validateLinksConfig(err *BuildError) {
+	if validateErr := v.Config.ValidateLinks(); validateErr != nil {
+		err.Add(&Error{
+			Message: validateErr.Error(),
+			Path:    "site.yaml",
+			Hint:    "Set highlight_color to a hex value like \"#ffffff\" or an rgb triplet like \"12, 69, 11\"",
+		})
+		return
+	}
+	if v.Config.Links.HighlightColor != "" && !v.Config.Links.HighlightActive {
+		err.AddWarning(&Error{
+			Message: "links.highlight_color has no effect unless links.highlight_active is true",
+			Path:    "site.yaml",
+			Hint:    "Set 'highlight_active: true' or remove 'highlight_color'",
 		})
 	}
 }

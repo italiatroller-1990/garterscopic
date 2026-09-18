@@ -376,3 +376,85 @@ func TestValidateResponsiveConfig(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateLinksConfig(t *testing.T) {
+	tests := []struct {
+		name        string
+		cfg         config.SiteConfig
+		wantErr     bool
+		wantWarning bool
+	}{
+		{
+			name:        "no links config",
+			cfg:         config.SiteConfig{Name: "Test"},
+			wantErr:     false,
+			wantWarning: false,
+		},
+		{
+			name: "valid color with highlight",
+			cfg: config.SiteConfig{
+				Name:  "Test",
+				Links: config.LinksConfig{HighlightActive: true, HighlightColor: "#ffffff"},
+			},
+			wantErr:     false,
+			wantWarning: false,
+		},
+		{
+			name: "valid rgb with highlight",
+			cfg: config.SiteConfig{
+				Name:  "Test",
+				Links: config.LinksConfig{HighlightActive: true, HighlightColor: "12, 69, 11"},
+			},
+			wantErr:     false,
+			wantWarning: false,
+		},
+		{
+			name: "invalid color",
+			cfg: config.SiteConfig{
+				Name:  "Test",
+				Links: config.LinksConfig{HighlightActive: true, HighlightColor: "red"},
+			},
+			wantErr:     true,
+			wantWarning: false,
+		},
+		{
+			name: "invalid rgb range",
+			cfg: config.SiteConfig{
+				Name:  "Test",
+				Links: config.LinksConfig{HighlightActive: true, HighlightColor: "300, 0, 0"},
+			},
+			wantErr:     true,
+			wantWarning: false,
+		},
+		{
+			name: "color without highlight warns",
+			cfg: config.SiteConfig{
+				Name:  "Test",
+				Links: config.LinksConfig{HighlightColor: "#ffffff"},
+			},
+			wantErr:     false,
+			wantWarning: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v := New(&tt.cfg)
+			buildErr := &BuildError{}
+			v.validateLinksConfig(buildErr)
+
+			if tt.wantErr && len(buildErr.Errors) == 0 {
+				t.Error("expected validation error, got none")
+			}
+			if !tt.wantErr && len(buildErr.Errors) > 0 {
+				t.Errorf("unexpected validation error: %v", buildErr.Errors[0])
+			}
+			if tt.wantWarning && len(buildErr.Warnings) == 0 {
+				t.Error("expected validation warning, got none")
+			}
+			if !tt.wantWarning && len(buildErr.Warnings) > 0 {
+				t.Errorf("unexpected validation warning: %v", buildErr.Warnings[0])
+			}
+		})
+	}
+}

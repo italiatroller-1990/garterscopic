@@ -155,6 +155,7 @@ links:
 links:
   fail_on_broken: true
   highlight_active: true
+  highlight_color: "#ffffff"
   entries:
     - name: Home
       url: /
@@ -166,16 +167,22 @@ links:
 |-------|------|---------|-------------|
 | `links.fail_on_broken` | bool | `false` | Fail the build on links to missing pages (otherwise a warning) |
 | `links.highlight_active` | bool | `false` | Mark the current page's nav link with `class="active"` and `aria-current="page"` |
+| `links.highlight_color` | string | — | Color of the active nav link: hex (`"#ffffff"`, `"#fff"`) or rgb triplet (`"12, 69, 11"`). Needs `highlight_active: true` |
 
 When `highlight_active` is on, the link whose URL matches the current page's
 route renders as `<a href="..." class="active" aria-current="page">`.
-Style it with one rule:
+Without `highlight_color`, style it with one rule:
 
 ```css
 .navbar-links a.active {
     text-decoration: underline;
 }
 ```
+
+With `highlight_color` set, the active link also gets an inline
+`style="color: ...;"` (a bare `"12, 69, 11"` triplet becomes
+`rgb(12, 69, 11)`). Anything else is a build error; setting the color
+without `highlight_active: true` is a warning since it has no effect.
 
 ### Favicon and Icon
 

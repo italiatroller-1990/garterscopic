@@ -238,7 +238,11 @@ func (r *Renderer) formatLinksValue(value any) string {
 		url = html.EscapeString(url)
 
 		if active, _ := link["active"].(bool); active {
-			items = append(items, fmt.Sprintf(`<li><a href="%s" class="active" aria-current="page">%s</a></li>`, url, name))
+			if style, _ := link["active_style"].(string); style != "" {
+				items = append(items, fmt.Sprintf(`<li><a href="%s" class="active" aria-current="page" style="color: %s;">%s</a></li>`, url, html.EscapeString(style), name))
+			} else {
+				items = append(items, fmt.Sprintf(`<li><a href="%s" class="active" aria-current="page">%s</a></li>`, url, name))
+			}
 		} else {
 			items = append(items, fmt.Sprintf("<li><a href=\"%s\">%s</a></li>", url, name))
 		}

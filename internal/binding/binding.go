@@ -26,6 +26,9 @@ type SiteInfo struct {
 	DesktopWidth    string
 	Links           []LinkConfig
 	HighlightActive bool
+	// HighlightColor is the CSS-ready active-link color (e.g. "#ffffff"
+	// or "rgb(12, 69, 11)"). Empty means no custom color.
+	HighlightColor string
 }
 
 type LinkConfig struct {
@@ -139,6 +142,9 @@ func (r *Resolver) resolveSite(field string) (any, error) {
 			entry := map[string]any{"name": l.Name, "url": l.URL}
 			if r.site.HighlightActive && normalizeRoute(l.URL) == normalizeRoute(r.page.Route) {
 				entry["active"] = true
+				if r.site.HighlightColor != "" {
+					entry["active_style"] = r.site.HighlightColor
+				}
 			}
 			result[i] = entry
 		}
