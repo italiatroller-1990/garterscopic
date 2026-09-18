@@ -299,3 +299,80 @@ func TestResolvePostsUnknownField(t *testing.T) {
 		t.Error("expected error for unknown posts field")
 	}
 }
+
+func TestResolveSiteLinksHighlightActive(t *testing.T) {
+	links := []LinkConfig{
+		{Name: "Home", URL: "/"},
+		{Name: "About", URL: "/about/"},
+	}
+
+	resolver := NewResolver(
+		nil,
+		PageInfo{Route: "/about/"},
+		SiteInfo{Links: links, HighlightActive: true},
+	)
+
+	resolved, err := resolver.Resolve("site.links")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	entries, ok := resolved.([]any)
+	if !ok || len(entries) != 2 {
+		t.Fatalf("expected 2 link entries, got %v", resolved)
+	}
+
+	home := entries[0].(map[string]any)
+	if _, found := home["active"]; found {
+		t.Error("expected Home link to not be active on /about/")
+	}
+
+	about := entries[1].(map[string]any)
+	if active, _ := about["active"].(bool); !active {
+		t.Error("expected About link to be active on /about/")
+	}
+}
+
+func TestResolveSiteLinksHighlightActiveTrailingSlashInsensitive(t *testing.T) {
+	links := []LinkConfig{
+		{Name: "About", URL: "/about"},
+	}
+
+	resolver := NewResolver(
+		nil,
+		PageInfo{Route: "/about/"},
+		SiteInfo{Links: links, HighlightActive: true},
+	)
+
+	resolved, err := resolver.Resolve("site.links")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	entry := resolved.([]any)[0].(map[string]any)
+	if active, _ := entry["active"].(bool); !active {
+		t.Error("expected /about link to match /about/ route")
+	}
+}
+
+func TestResolveSiteLinksNoHighlightByDefault(t *testing.T) {
+	links := []LinkConfig{
+		{Name: "Home", URL: "/"},
+	}
+
+	resolver := NewResolver(
+		nil,
+		PageInfo{Route: "/"},
+		SiteInfo{Links: links},
+	)
+
+	resolved, err := resolver.Resolve("site.links")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	entry := resolved.([]any)[0].(map[string]any)
+	if _, found := entry["active"]; found {
+		t.Error("expected no active flag when highlight is disabled")
+	}
+}

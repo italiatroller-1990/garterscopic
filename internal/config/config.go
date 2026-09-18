@@ -70,16 +70,18 @@ type ResponsiveConfig struct {
 //	  - name: Home
 //	    url: /
 //
-// or the map form with fail_on_broken:
+// or the map form with fail_on_broken and highlight_active:
 //
 //	links:
 //	  fail_on_broken: true
+//	  highlight_active: true
 //	  entries:
 //	    - name: Home
 //	      url: /
 type LinksConfig struct {
-	Entries      []LinkConfig
-	FailOnBroken bool
+	Entries         []LinkConfig
+	FailOnBroken    bool
+	HighlightActive bool `yaml:"highlight_active"`
 }
 
 func (l *LinksConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -90,13 +92,15 @@ func (l *LinksConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 
 	var raw struct {
-		FailOnBroken bool         `yaml:"fail_on_broken"`
-		Entries      []LinkConfig `yaml:"entries"`
+		FailOnBroken    bool         `yaml:"fail_on_broken"`
+		HighlightActive bool         `yaml:"highlight_active"`
+		Entries         []LinkConfig `yaml:"entries"`
 	}
 	if err := unmarshal(&raw); err != nil {
 		return err
 	}
 	l.FailOnBroken = raw.FailOnBroken
+	l.HighlightActive = raw.HighlightActive
 	l.Entries = raw.Entries
 	return nil
 }

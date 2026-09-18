@@ -323,6 +323,39 @@ func TestRenderLinksType(t *testing.T) {
 	}
 }
 
+func TestRenderLinksActiveHighlight(t *testing.T) {
+	defs := map[string]components.Definition{
+		"navbar": {
+			Name: "navbar",
+			Options: map[string]components.OptionDefinition{
+				"links": {Type: "links"},
+			},
+		},
+	}
+	r := New(defs)
+
+	html := `<ul>{{ links }}</ul>`
+	linksList := []any{
+		map[string]any{"name": "Home", "url": "/"},
+		map[string]any{"name": "About", "url": "/about", "active": true},
+	}
+	options := map[string]any{
+		"links": linksList,
+	}
+
+	result, err := r.RenderComponentHTML("navbar", html, options)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !contains(result, "<li><a href=\"/\">Home</a></li>") {
+		t.Errorf("links type: expected plain Home link, got %q", result)
+	}
+	if !contains(result, `<li><a href="/about" class="active" aria-current="page">About</a></li>`) {
+		t.Errorf("links type: expected active About link, got %q", result)
+	}
+}
+
 func TestRenderSEOMetaTagsIncludesViewport(t *testing.T) {
 	r := New(map[string]components.Definition{})
 	page := &pages.Page{Title: "Test"}

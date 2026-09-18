@@ -1122,3 +1122,125 @@ responsive:
 		t.Error("expected viewport meta tag in output")
 	}
 }
+
+func createNavHighlightSite(t *testing.T, tmpdir string, linksConfig string) {
+	t.Helper()
+
+	for _, dir := range []string{"components", "layouts", "page-types", "pages"} {
+		os.MkdirAll(filepath.Join(tmpdir, dir), 0755)
+	}
+
+	os.WriteFile(filepath.Join(tmpdir, "components", "definitions.yaml"), []byte(`components:
+  navbar:
+    file: navbar.html
+    options:
+      links:
+        type: links
+`), 0644)
+
+	os.WriteFile(filepath.Join(tmpdir, "components", "navbar.html"), []byte(`<nav class="navbar">{{ links }}</nav>`), 0644)
+
+	os.WriteFile(filepath.Join(tmpdir, "layouts", "default.yaml"), []byte(`name: default
+components:
+  - name: navbar
+    options:
+      from:
+        links: site.links
+  - name: content
+`), 0644)
+
+	os.WriteFile(filepath.Join(tmpdir, "page-types", "page.yaml"), []byte(`name: page
+layout: default
+fields:
+  title:
+    type: string
+    required: true
+`), 0644)
+
+	os.WriteFile(filepath.Join(tmpdir, "pages", "index.md"), []byte(`---
+type: page
+title: Home
+---
+
+# Home
+`), 0644)
+
+	os.WriteFile(filepath.Join(tmpdir, "pages", "about.md"), []byte(`---
+type: page
+title: About
+---
+
+# About
+`), 0644)
+
+	siteYaml := `name: Test Site
+base_url: http://localhost:8080
+build:
+  source: .
+  output: dist
+` + linksConfig
+
+	os.WriteFile(filepath.Join(tmpdir, "site.yaml"), []byte(siteYaml), 0644)
+}
+
+func TestHighlightActiveNavLinks(t *testing.T) {
+	tmpdir := t.TempDir()
+	createNavHighlightSite(t, tmpdir, `links:
+  highlight_active: true
+  entries:
+    - name: Home
+      url: /
+    - name: About
+      url: /about/
+`)
+
+	_, _ = buildFeatureSite(t, tmpdir)
+
+	aboutData, err := os.ReadFile(filepath.Join(tmpdir, "dist", "about", "index.html"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	about := string(aboutData)
+
+	if !strings.Contains(about, `<li><a href="/about/" class="active" aria-current="page">About</a></li>`) {
+		t.Errorf("expected active About link on about page, got:\n%s", about)
+	}
+	if !strings.Contains(about, `<li><a href="/">Home</a></li>`) {
+		t.Errorf("expected plain Home link on about page, got:\n%s", about)
+	}
+
+	indexData, err := os.ReadFile(filepath.Join(tmpdir, "dist", "index.html"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	index := string(indexData)
+
+	if !strings.Contains(index, `<li><a href="/" class="active" aria-current="page">Home</a></li>`) {
+		t.Errorf("expected active Home link on index page, got:\n%s", index)
+	}
+	if !strings.Contains(index, `<li><a href="/about/">About</a></li>`) {
+		t.Errorf("expected plain About link on index page, got:\n%s", index)
+	}
+}
+
+func TestHighlightActiveNavLinksDisabledByDefault(t *testing.T) {
+	tmpdir := t.TempDir()
+	createNavHighlightSite(t, tmpdir, `links:
+  - name: Home
+    url: /
+  - name: About
+    url: /about/
+`)
+
+	_, _ = buildFeatureSite(t, tmpdir)
+
+	for _, page := range []string{"index.html", "about/index.html"} {
+		data, err := os.ReadFile(filepath.Join(tmpdir, "dist", page))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if strings.Contains(string(data), `class="active"`) {
+			t.Errorf("expected no active class in %s when highlight is disabled", page)
+		}
+	}
+}

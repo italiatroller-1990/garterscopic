@@ -4,13 +4,8 @@ components:
   - name: navbar
     options:
       logo: My Site
-      links:
-        - name: Home
-          url: /
-        - name: About
-          url: /about
-        - name: Contact
-          url: /contact
+      from:
+        links: site.links
 
   - name: post-list
 

@@ -146,6 +146,47 @@ links:
 	}
 }
 
+func TestLinksHighlightActive(t *testing.T) {
+	content := `
+name: Test
+links:
+  highlight_active: true
+  entries:
+    - name: Home
+      url: /
+    - name: About
+      url: /about/
+`
+	cfg, err := Load(writeTemp(t, "site.yaml", content))
+	if err != nil {
+		t.Fatalf("failed to load config: %v", err)
+	}
+
+	if !cfg.Links.HighlightActive {
+		t.Error("expected highlight_active true")
+	}
+	if len(cfg.Links.Entries) != 2 {
+		t.Errorf("unexpected entries: %+v", cfg.Links.Entries)
+	}
+}
+
+func TestLinksHighlightActiveDefaultsFalse(t *testing.T) {
+	content := `
+name: Test
+links:
+  - name: Home
+    url: /
+`
+	cfg, err := Load(writeTemp(t, "site.yaml", content))
+	if err != nil {
+		t.Fatalf("failed to load config: %v", err)
+	}
+
+	if cfg.Links.HighlightActive {
+		t.Error("expected highlight_active to be false by default")
+	}
+}
+
 func TestFeatureSections(t *testing.T) {
 	content := `
 name: Test

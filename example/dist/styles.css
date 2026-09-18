@@ -236,6 +236,11 @@ pre {
     color: white;
 }
 
+.navbar-links a.active {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
 @media screen and (max-width: 768px) {
     .navbar {
         flex-direction: column;

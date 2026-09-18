@@ -242,10 +242,12 @@ responsive:
   viewport: "device-width"
 
 links:
-  - name: Home
-    url: /
-  - name: About
-    url: /about/
+  highlight_active: true
+  entries:
+    - name: Home
+      url: /
+    - name: About
+      url: /about/
 
 favicon: favicon.png
 icon: icon.png
@@ -508,6 +510,11 @@ pre {
 
 .navbar-links a {
     color: white;
+}
+
+.navbar-links a.active {
+    text-decoration: underline;
+    text-underline-offset: 4px;
 }
 
 @media screen and (max-width: 768px) {

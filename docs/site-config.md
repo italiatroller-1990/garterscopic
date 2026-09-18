@@ -151,14 +151,30 @@ links:
   - name: About
     url: /about/
 
-# Map form with broken link checking
+# Map form with broken link checking and active link highlighting
 links:
   fail_on_broken: true
+  highlight_active: true
   entries:
     - name: Home
       url: /
     - name: About
       url: /about/
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `links.fail_on_broken` | bool | `false` | Fail the build on links to missing pages (otherwise a warning) |
+| `links.highlight_active` | bool | `false` | Mark the current page's nav link with `class="active"` and `aria-current="page"` |
+
+When `highlight_active` is on, the link whose URL matches the current page's
+route renders as `<a href="..." class="active" aria-current="page">`.
+Style it with one rule:
+
+```css
+.navbar-links a.active {
+    text-decoration: underline;
+}
 ```
 
 ### Favicon and Icon

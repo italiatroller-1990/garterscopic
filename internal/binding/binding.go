@@ -19,12 +19,13 @@ type PageInfo struct {
 }
 
 type SiteInfo struct {
-	Name         string
-	BaseURL      string
-	MobileWidth  string
-	TabletWidth  string
-	DesktopWidth string
-	Links        []LinkConfig
+	Name            string
+	BaseURL         string
+	MobileWidth     string
+	TabletWidth     string
+	DesktopWidth    string
+	Links           []LinkConfig
+	HighlightActive bool
 }
 
 type LinkConfig struct {
@@ -135,12 +136,32 @@ func (r *Resolver) resolveSite(field string) (any, error) {
 	case "links":
 		result := make([]any, len(r.site.Links))
 		for i, l := range r.site.Links {
-			result[i] = map[string]any{"name": l.Name, "url": l.URL}
+			entry := map[string]any{"name": l.Name, "url": l.URL}
+			if r.site.HighlightActive && normalizeRoute(l.URL) == normalizeRoute(r.page.Route) {
+				entry["active"] = true
+			}
+			result[i] = entry
 		}
 		return result, nil
 	default:
 		return nil, fmt.Errorf("unknown site field '%s'", field)
 	}
+}
+
+// normalizeRoute normalizes a link URL and a page route for comparison:
+// ensures a leading slash, drops a trailing slash (except for the root),
+// and treats an empty value as "/". This way "/about/" matches "/about".
+func normalizeRoute(route string) string {
+	if route == "" {
+		return "/"
+	}
+	if !strings.HasPrefix(route, "/") {
+		route = "/" + route
+	}
+	if route != "/" {
+		route = strings.TrimSuffix(route, "/")
+	}
+	return route
 }
 
 func (r *Resolver) resolvePosts(field string) (any, error) {
