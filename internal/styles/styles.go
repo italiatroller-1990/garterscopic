@@ -11,15 +11,121 @@ import (
 )
 
 // GenerateResponsiveCSS returns a CSS snippet defining custom properties
-// for the configured responsive breakpoints. The variables use the --gs-
-// prefix to avoid collisions with user-defined properties.
+// for the configured responsive breakpoints, plus a small responsive
+// foundation (fluid media, overflow guards, and stacking media queries).
+// The variables use the --gs- prefix to avoid collisions with
+// user-defined properties.
+//
+// Note: CSS custom properties cannot be used in @media conditions, so the
+// media queries below interpolate the configured breakpoint values directly.
 func GenerateResponsiveCSS(cfg *config.SiteConfig) string {
+	mobile := cfg.Responsive.Mobile
+	if mobile == "" {
+		mobile = "768px"
+	}
+	tablet := cfg.Responsive.Tablet
+	if tablet == "" {
+		tablet = "1024px"
+	}
+	desktop := cfg.Responsive.Desktop
+	if desktop == "" {
+		desktop = "1200px"
+	}
 	return fmt.Sprintf(`:root {
     --gs-mobile: %s;
     --gs-tablet: %s;
     --gs-desktop: %s;
 }
-`, cfg.Responsive.Mobile, cfg.Responsive.Tablet, cfg.Responsive.Desktop)
+
+/* Garterscopic responsive foundation: look good on all devices. */
+
+/* Responsive media: scale down if needed, never scale up beyond natural size. */
+img, video, svg, canvas {
+    max-width: 100%%;
+    height: auto;
+}
+picture, figure {
+    max-width: 100%%;
+}
+iframe {
+    max-width: 100%%;
+}
+
+/* Guard against horizontal overflow from long words, tables, and code. */
+body {
+    overflow-x: hidden;
+}
+h1, h2, h3, h4, h5, h6, p {
+    overflow-wrap: break-word;
+}
+table {
+    display: block;
+    max-width: 100%%;
+    overflow-x: auto;
+}
+pre, code {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+pre {
+    max-width: 100%%;
+    overflow-x: auto;
+}
+
+/* Fluid type: follows the viewport instead of staying fixed. */
+h1 {
+    font-size: clamp(1.75rem, 1.25rem + 2.5vw, 2.5rem);
+}
+
+/* Tablet and below: tighten page gutters and hero rhythm. */
+@media screen and (max-width: %s) {
+    .container {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+    .hero {
+        padding: 3rem 1.5rem;
+    }
+    .hero-title {
+        font-size: clamp(2rem, 1.25rem + 4vw, 2.5rem);
+    }
+}
+
+/* Mobile: stack navigation and content instead of squeezing them. */
+@media screen and (max-width: %s) {
+    .container {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+    .navbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+    .navbar-links {
+        flex-direction: column;
+        align-items: stretch;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .hero {
+        padding: 2rem 1rem;
+    }
+    .hero-title {
+        font-size: clamp(1.75rem, 1rem + 8vw, 2.25rem);
+    }
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    .card {
+        margin: 0.75rem 0;
+    }
+    .footer {
+        padding: 1.5rem 1rem;
+    }
+}
+`, mobile, tablet, desktop, tablet, mobile)
 }
 
 // CollectStyles deduplicates and validates the list of stylesheet paths,

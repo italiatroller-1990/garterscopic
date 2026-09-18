@@ -416,10 +416,20 @@ No Node.js required!
     box-sizing: border-box;
 }
 
+html {
+    font-size: 100%;
+    -webkit-text-size-adjust: 100%;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     line-height: 1.6;
     color: #333;
+    overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6, p {
+    overflow-wrap: break-word;
 }
 
 a {
@@ -431,10 +441,44 @@ a:hover {
     text-decoration: underline;
 }
 
+/* Responsive media: scale down to fit any viewport, never overflow. */
+img, video, svg, canvas {
+    max-width: 100%;
+    height: auto;
+}
+picture, figure, iframe {
+    max-width: 100%;
+}
+table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+}
+pre {
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
 .container {
+    width: 100%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
+}
+
+/* Breakpoints below match responsive.mobile/tablet/desktop in site.yaml. */
+@media screen and (max-width: 1024px) {
+    .container {
+        padding: 0 16px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 0 12px;
+    }
 }
 `,
 
@@ -445,6 +489,8 @@ a:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 .navbar-logo {
@@ -456,11 +502,27 @@ a:hover {
 .navbar-links {
     list-style: none;
     display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
 }
 
 .navbar-links a {
     color: white;
+}
+
+@media screen and (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+
+    .navbar-links {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
 }
 `,
 
@@ -468,16 +530,38 @@ a:hover {
     padding: 4rem 2rem;
     text-align: center;
     background: #f5f5f5;
+    overflow-wrap: break-word;
 }
 
 .hero-title {
-    font-size: 3rem;
+    font-size: clamp(2rem, 1.25rem + 4vw, 3rem);
     margin-bottom: 1rem;
+    line-height: 1.2;
 }
 
 .hero-subtitle {
-    font-size: 1.25rem;
+    font-size: clamp(1rem, 0.875rem + 1vw, 1.25rem);
     color: #666;
+}
+
+@media screen and (max-width: 1024px) {
+    .hero {
+        padding: 3rem 1.5rem;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .hero {
+        padding: 2rem 1rem;
+    }
+
+    .hero-title {
+        font-size: clamp(1.75rem, 1rem + 8vw, 2.25rem);
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+    }
 }
 `,
 
@@ -486,10 +570,17 @@ a:hover {
     color: white;
     padding: 2rem;
     text-align: center;
+    overflow-wrap: break-word;
 }
 
 .footer-copyright {
     margin: 0;
+}
+
+@media screen and (max-width: 768px) {
+    .footer {
+        padding: 1.5rem 1rem;
+    }
 }
 `,
 

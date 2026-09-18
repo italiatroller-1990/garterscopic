@@ -4,10 +4,20 @@
     box-sizing: border-box;
 }
 
+html {
+    font-size: 100%;
+    -webkit-text-size-adjust: 100%;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     line-height: 1.6;
     color: #333;
+    overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6, p {
+    overflow-wrap: break-word;
 }
 
 a {
@@ -19,8 +29,42 @@ a:hover {
     text-decoration: underline;
 }
 
+/* Responsive media: scale down to fit any viewport, never overflow. */
+img, video, svg, canvas {
+    max-width: 100%;
+    height: auto;
+}
+picture, figure, iframe {
+    max-width: 100%;
+}
+table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+}
+pre {
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
 .container {
+    width: 100%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
+}
+
+/* Breakpoints below match responsive.mobile/tablet/desktop in site.yaml. */
+@media screen and (max-width: 1024px) {
+    .container {
+        padding: 0 16px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 0 12px;
+    }
 }

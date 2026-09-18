@@ -15,6 +15,12 @@ styles:
   global:
     - styles/global.css
 
+responsive:
+  mobile: "768px"
+  tablet: "1024px"
+  desktop: "1200px"
+  viewport: "device-width"
+
 sitemap:
   enabled: true
 

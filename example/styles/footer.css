@@ -3,8 +3,15 @@
     color: white;
     padding: 2rem;
     text-align: center;
+    overflow-wrap: break-word;
 }
 
 .footer-copyright {
     margin: 0;
+}
+
+@media screen and (max-width: 768px) {
+    .footer {
+        padding: 1.5rem 1rem;
+    }
 }
