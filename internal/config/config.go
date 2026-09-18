@@ -58,9 +58,10 @@ func (c *SiteConfig) UnmarshalYAML(value *yaml.Node) error {
 }
 
 type ResponsiveConfig struct {
-	Mobile  string `yaml:"mobile"`
-	Tablet  string `yaml:"tablet"`
-	Desktop string `yaml:"desktop"`
+	Mobile   string `yaml:"mobile"`
+	Tablet   string `yaml:"tablet"`
+	Desktop  string `yaml:"desktop"`
+	Viewport string `yaml:"viewport"`
 }
 
 // LinksConfig accepts either the legacy list form
@@ -203,6 +204,9 @@ func setDefaults(cfg *SiteConfig) {
 	}
 	if cfg.Responsive.Desktop == "" {
 		cfg.Responsive.Desktop = "1200px"
+	}
+	if cfg.Responsive.Viewport == "" {
+		cfg.Responsive.Viewport = "device-width"
 	}
 	if cfg.Icon == "" {
 		cfg.Icon = "icon.png"

@@ -618,7 +618,7 @@ func (b *Builder) wrapInDocument(body string, page pages.Page, metadata map[stri
 	// Generate SEO meta tags, omitting the viewport tag when the body
 	// already contains one (avoid duplicate viewport declarations).
 	hasViewport := strings.Contains(body, `name="viewport"`) || strings.Contains(body, `name='viewport'`)
-	seoMetaTags := b.Renderer.RenderSEOMetaTagsExclViewport(&page, b.Config.BaseURL, hasViewport)
+	seoMetaTags := b.Renderer.RenderSEOMetaTagsExclViewport(&page, b.Config.BaseURL, hasViewport, b.Config.Responsive.Viewport)
 
 	return fmt.Sprintf(`<!doctype html>
 <html lang="%s">

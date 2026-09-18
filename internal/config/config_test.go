@@ -199,6 +199,7 @@ responsive:
   mobile: "690px"
   tablet: "820px"
   desktop: "1000px"
+  viewport: "1200"
 `
 	cfg, err := Load(writeTemp(t, "site.yaml", content))
 	if err != nil {
@@ -213,6 +214,9 @@ responsive:
 	}
 	if cfg.Responsive.Desktop != "1000px" {
 		t.Errorf("expected desktop '1000px', got '%s'", cfg.Responsive.Desktop)
+	}
+	if cfg.Responsive.Viewport != "1200" {
+		t.Errorf("expected viewport '1200', got '%s'", cfg.Responsive.Viewport)
 	}
 }
 
@@ -230,6 +234,9 @@ func TestResponsiveConfigDefaults(t *testing.T) {
 	}
 	if cfg.Responsive.Desktop != "1200px" {
 		t.Errorf("expected default desktop '1200px', got '%s'", cfg.Responsive.Desktop)
+	}
+	if cfg.Responsive.Viewport != "device-width" {
+		t.Errorf("expected default viewport 'device-width', got '%s'", cfg.Responsive.Viewport)
 	}
 }
 

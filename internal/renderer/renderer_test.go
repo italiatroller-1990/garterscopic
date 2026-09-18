@@ -337,7 +337,7 @@ func TestRenderSEOMetaTagsExclViewport(t *testing.T) {
 	r := New(map[string]components.Definition{})
 	page := &pages.Page{Title: "Test"}
 
-	tags := r.RenderSEOMetaTagsExclViewport(page, "", true)
+	tags := r.RenderSEOMetaTagsExclViewport(page, "", true, "device-width")
 	if contains(tags, `name="viewport"`) {
 		t.Error("expected viewport meta tag to be excluded")
 	}
@@ -347,9 +347,19 @@ func TestRenderSEOMetaTagsExclViewportFalse(t *testing.T) {
 	r := New(map[string]components.Definition{})
 	page := &pages.Page{Title: "Test"}
 
-	tags := r.RenderSEOMetaTagsExclViewport(page, "", false)
+	tags := r.RenderSEOMetaTagsExclViewport(page, "", false, "device-width")
 	if !contains(tags, `name="viewport"`) {
 		t.Error("expected viewport meta tag to be included when excludeViewport=false")
+	}
+}
+
+func TestRenderSEOMetaTagsCustomViewport(t *testing.T) {
+	r := New(map[string]components.Definition{})
+	page := &pages.Page{Title: "Test"}
+
+	tags := r.RenderSEOMetaTagsExclViewport(page, "", false, "1200")
+	if !contains(tags, `<meta name="viewport" content="width=1200, initial-scale=1">`) {
+		t.Errorf("expected viewport meta tag with custom width, got %q", tags)
 	}
 }
 

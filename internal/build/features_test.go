@@ -871,6 +871,26 @@ func TestViewportMetaTagGenerated(t *testing.T) {
 	}
 }
 
+func TestViewportMetaTagCustomWidth(t *testing.T) {
+	tmpdir := t.TempDir()
+	createFeatureSite(t, tmpdir, `
+responsive:
+  viewport: "1200"
+`)
+
+	_, _ = buildFeatureSite(t, tmpdir)
+
+	data, err := os.ReadFile(filepath.Join(tmpdir, "dist", "index.html"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	content := string(data)
+
+	if !strings.Contains(content, `<meta name="viewport" content="width=1200, initial-scale=1">`) {
+		t.Errorf("expected viewport meta tag with custom width=1200, got %q", content)
+	}
+}
+
 func TestViewportMetaTagNotDuplicated(t *testing.T) {
 	tmpdir := t.TempDir()
 	createFeatureSite(t, tmpdir, "")

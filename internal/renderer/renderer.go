@@ -260,15 +260,16 @@ func (r *Renderer) formatObjectValue(value any) string {
 }
 
 // RenderSEOMetaTags generates meta tags for a page, always including the
-// viewport meta tag.
+// viewport meta tag with device-width.
 func (r *Renderer) RenderSEOMetaTags(page *pages.Page, baseURL string) string {
-	return r.RenderSEOMetaTagsExclViewport(page, baseURL, false)
+	return r.RenderSEOMetaTagsExclViewport(page, baseURL, false, "device-width")
 }
 
 // RenderSEOMetaTagsExclViewport generates meta tags for a page. When
 // excludeViewport is true, the viewport meta tag is omitted (used when the
-// body already contains one to avoid duplication).
-func (r *Renderer) RenderSEOMetaTagsExclViewport(page *pages.Page, baseURL string, excludeViewport bool) string {
+// body already contains one to avoid duplication). viewportWidth controls the
+// width value in the viewport meta tag (e.g. "device-width", "1200").
+func (r *Renderer) RenderSEOMetaTagsExclViewport(page *pages.Page, baseURL string, excludeViewport bool, viewportWidth string) string {
 	var tags []string
 
 	// Meta charset (always included)
@@ -276,7 +277,7 @@ func (r *Renderer) RenderSEOMetaTagsExclViewport(page *pages.Page, baseURL strin
 
 	// Viewport (always included for mobile, unless caller says to skip)
 	if !excludeViewport {
-		tags = append(tags, `<meta name="viewport" content="width=device-width, initial-scale=1">`)
+		tags = append(tags, fmt.Sprintf(`<meta name="viewport" content="width=%s, initial-scale=1">`, viewportWidth))
 	}
 
 	// Language
