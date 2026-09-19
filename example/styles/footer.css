@@ -10,8 +10,5 @@
     margin: 0;
 }
 
-@media screen and (max-width: 768px) {
-    .footer {
-        padding: 1.5rem 1rem;
-    }
-}
+/* NOTE: responsive .footer padding is generated from `responsive.mobile`
+   in site.yaml. Do not hard-code breakpoints here. */

@@ -3,11 +3,15 @@ package build
 import (
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/italiatroller-1990/garterscopic/internal/config"
 )
+
+// mediaRe extracts the width from "@media screen and (max-width: <width>)".
+var mediaRe = regexp.MustCompile(`@media screen and \(max-width:\s*([^)]+)\)`)
 
 // createFeatureSite builds a site with posts exercising tags/categories.
 func createFeatureSite(t *testing.T, tmpdir string, extraConfig string) {
@@ -1303,5 +1307,74 @@ func TestHighlightActiveInvalidColorFailsValidation(t *testing.T) {
 
 	if buildErr := b.Validate(); buildErr == nil || !buildErr.HasErrors() {
 		t.Error("expected validation error for invalid highlight color")
+	}
+}
+
+func TestResponsiveCustomConfigDrivesGeneratedCSS(t *testing.T) {
+	tmpdir := t.TempDir()
+	createFeatureSite(t, tmpdir, `
+responsive:
+  mobile: "600px"
+  tablet: "900px"
+  desktop: "1100px"
+`)
+
+	_, _ = buildFeatureSite(t, tmpdir)
+
+	data, err := os.ReadFile(filepath.Join(tmpdir, "dist", "styles.css"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	content := string(data)
+
+	// Configured values must drive the generated output.
+	for _, want := range []string{
+		"@media screen and (max-width: 600px)",
+		"@media screen and (max-width: 900px)",
+		"max-width: 1100px",
+	} {
+		if !strings.Contains(content, want) {
+			t.Errorf("expected styles.css to contain %q", want)
+		}
+	}
+
+	// Desktop is the container width, never another breakpoint.
+	if strings.Contains(content, "@media screen and (max-width: 1100px)") {
+		t.Error("expected desktop value to never become a media breakpoint")
+	}
+
+	// No stale defaults may leak in.
+	for _, stale := range []string{"768px", "1024px", "1200px"} {
+		if strings.Contains(content, stale) {
+			t.Errorf("expected styles.css to not contain stale default %q", stale)
+		}
+	}
+}
+
+func TestResponsiveStarterCSSHasNoHardcodedBreakpoints(t *testing.T) {
+	// The starter CSS must not duplicate the configured values: with a
+	// custom config, no @media rule in the final stylesheet may use a
+	// breakpoint that was not configured.
+	tmpdir := t.TempDir()
+	createFeatureSite(t, tmpdir, `
+responsive:
+  mobile: "600px"
+  tablet: "900px"
+  desktop: "1100px"
+`)
+
+	_, _ = buildFeatureSite(t, tmpdir)
+
+	data, err := os.ReadFile(filepath.Join(tmpdir, "dist", "styles.css"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	content := string(data)
+
+	for _, m := range mediaRe.FindAllStringSubmatch(content, -1) {
+		width := m[1]
+		if width != "600px" && width != "900px" {
+			t.Errorf("found @media breakpoint %q that is not a configured value", width)
+		}
 	}
 }

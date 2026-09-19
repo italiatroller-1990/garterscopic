@@ -16,22 +16,6 @@
     color: #666;
 }
 
-@media screen and (max-width: 1024px) {
-    .hero {
-        padding: 3rem 1.5rem;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    .hero {
-        padding: 2rem 1rem;
-    }
-
-    .hero-title {
-        font-size: clamp(1.75rem, 1rem + 8vw, 2.25rem);
-    }
-
-    .hero-subtitle {
-        font-size: 1rem;
-    }
-}
+/* NOTE: responsive .hero padding and type scaling are generated from
+   `responsive.mobile`/`responsive.tablet` in site.yaml. The clamp() sizes
+   above are fluid by design; do not hard-code breakpoints here. */

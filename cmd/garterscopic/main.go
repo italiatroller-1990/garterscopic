@@ -463,25 +463,11 @@ pre {
     word-wrap: break-word;
 }
 
-.container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-/* Breakpoints below match responsive.mobile/tablet/desktop in site.yaml. */
-@media screen and (max-width: 1024px) {
-    .container {
-        padding: 0 16px;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    .container {
-        padding: 0 12px;
-    }
-}
+/* NOTE: the '.container' rule (fluid width, configured max-width, and
+   responsive gutters) is generated from the 'responsive' section in
+   site.yaml, so it is intentionally not defined here. Do not hard-code
+   pixel breakpoints in this file — later rules override the generated
+   ones and would silently ignore the configured values. */
 `,
 
 		"styles/navbar.css": `.navbar {
@@ -517,20 +503,8 @@ pre {
     text-underline-offset: 4px;
 }
 
-@media screen and (max-width: 768px) {
-    .navbar {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.75rem;
-        padding: 1rem;
-    }
-
-    .navbar-links {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.5rem;
-    }
-}
+/* NOTE: the mobile stacking of .navbar/.navbar-links is generated from
+   'responsive.mobile' in site.yaml. Do not hard-code breakpoints here. */
 `,
 
 		"styles/hero.css": `.hero {
@@ -551,25 +525,9 @@ pre {
     color: #666;
 }
 
-@media screen and (max-width: 1024px) {
-    .hero {
-        padding: 3rem 1.5rem;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    .hero {
-        padding: 2rem 1rem;
-    }
-
-    .hero-title {
-        font-size: clamp(1.75rem, 1rem + 8vw, 2.25rem);
-    }
-
-    .hero-subtitle {
-        font-size: 1rem;
-    }
-}
+/* NOTE: responsive .hero padding and type scaling are generated from
+   'responsive.mobile'/'responsive.tablet' in site.yaml. The clamp() sizes
+   above are fluid by design; do not hard-code breakpoints here. */
 `,
 
 		"styles/footer.css": `.footer {
@@ -584,11 +542,8 @@ pre {
     margin: 0;
 }
 
-@media screen and (max-width: 768px) {
-    .footer {
-        padding: 1.5rem 1rem;
-    }
-}
+/* NOTE: responsive .footer padding is generated from 'responsive.mobile'
+   in site.yaml. Do not hard-code breakpoints here. */
 `,
 
 		"assets/js/main.js": `console.log("Garterscopic site loaded!");

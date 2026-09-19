@@ -18,9 +18,5 @@
     max-width: 100%;
 }
 
-@media screen and (max-width: 768px) {
-    .card {
-        padding: 0.875rem 1rem;
-        margin: 0.75rem 0;
-    }
-}
+/* NOTE: responsive .card spacing is generated from `responsive.mobile` in
+   site.yaml. Do not hard-code breakpoints here. */

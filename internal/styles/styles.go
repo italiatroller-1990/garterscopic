@@ -10,11 +10,16 @@ import (
 	"github.com/italiatroller-1990/garterscopic/internal/config"
 )
 
-// GenerateResponsiveCSS returns a CSS snippet defining custom properties
-// for the configured responsive breakpoints, plus a small responsive
-// foundation (fluid media, overflow guards, and stacking media queries).
-// The variables use the --gs- prefix to avoid collisions with
-// user-defined properties.
+// GenerateResponsiveCSS returns a CSS snippet implementing the site's
+// responsive configuration: custom properties for the configured values,
+// plus a small responsive foundation (fluid media, overflow guards, a
+// breakpoint-driven container, and stacking media queries). The variables
+// use the --gs- prefix to avoid collisions with user-defined properties.
+//
+// Semantics: mobile and tablet are max-viewport-width breakpoints
+// (<= mobile is mobile, <= tablet is tablet, above is desktop), while
+// desktop is the maximum content/container width — never a media-query
+// breakpoint.
 //
 // Note: CSS custom properties cannot be used in @media conditions, so the
 // media queries below interpolate the configured breakpoint values directly.
@@ -77,6 +82,15 @@ h1 {
     font-size: clamp(1.75rem, 1.25rem + 2.5vw, 2.5rem);
 }
 
+/* Content container: fluid within the viewport, capped at the configured
+   desktop (maximum content) width. Shrinks naturally on small viewports. */
+.container {
+    width: 100%%;
+    max-width: %s;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
 /* Tablet and below: tighten page gutters and hero rhythm. */
 @media screen and (max-width: %s) {
     .container {
@@ -125,7 +139,7 @@ h1 {
         padding: 1.5rem 1rem;
     }
 }
-`, mobile, tablet, desktop, tablet, mobile)
+`, mobile, tablet, desktop, desktop, tablet, mobile)
 }
 
 // CollectStyles deduplicates and validates the list of stylesheet paths,

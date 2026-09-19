@@ -267,6 +267,23 @@ func (r *Renderer) formatObjectValue(value any) string {
 	return strings.Join(parts, " ")
 }
 
+// viewportContent resolves the configured viewport into a complete
+// viewport meta content value. Short forms name the width ("device-width"
+// or "1200" become "width=device-width, initial-scale=1" and
+// "width=1200, initial-scale=1"); a value that already assigns a property
+// (contains "=") is used verbatim so it is never duplicated into
+// "width=width=...". Empty values fall back to "device-width".
+func viewportContent(viewportWidth string) string {
+	v := strings.TrimSpace(viewportWidth)
+	if v == "" {
+		v = "device-width"
+	}
+	if strings.Contains(v, "=") {
+		return v
+	}
+	return fmt.Sprintf("width=%s, initial-scale=1", v)
+}
+
 // RenderSEOMetaTags generates meta tags for a page, always including the
 // viewport meta tag with device-width.
 func (r *Renderer) RenderSEOMetaTags(page *pages.Page, baseURL string) string {
@@ -275,8 +292,9 @@ func (r *Renderer) RenderSEOMetaTags(page *pages.Page, baseURL string) string {
 
 // RenderSEOMetaTagsExclViewport generates meta tags for a page. When
 // excludeViewport is true, the viewport meta tag is omitted (used when the
-// body already contains one to avoid duplication). viewportWidth controls the
-// width value in the viewport meta tag (e.g. "device-width", "1200").
+// body already contains one to avoid duplication). viewportWidth accepts a
+// short width ("device-width", "1200") or a complete viewport content value
+// (used verbatim when it already assigns a property).
 func (r *Renderer) RenderSEOMetaTagsExclViewport(page *pages.Page, baseURL string, excludeViewport bool, viewportWidth string) string {
 	var tags []string
 
@@ -285,7 +303,7 @@ func (r *Renderer) RenderSEOMetaTagsExclViewport(page *pages.Page, baseURL strin
 
 	// Viewport (always included for mobile, unless caller says to skip)
 	if !excludeViewport {
-		tags = append(tags, fmt.Sprintf(`<meta name="viewport" content="width=%s, initial-scale=1">`, viewportWidth))
+		tags = append(tags, fmt.Sprintf(`<meta name="viewport" content="%s">`, html.EscapeString(viewportContent(viewportWidth))))
 	}
 
 	// Language

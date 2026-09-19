@@ -31,6 +31,7 @@ responsive:
   mobile: "768px"
   tablet: "1024px"
   desktop: "1200px"
+  viewport: "device-width"
 
 links:
   - name: Home
@@ -129,15 +130,44 @@ scripts:
 | `src` | string | Script path (relative to output root) |
 | `type` | string | Script type (omit for classic, `module` for ES modules) |
 
-### Responsive Breakpoints
+### Responsive
+
+The `responsive` section is the single source of truth for responsive
+behavior. `site.yaml` values flow into the generated stylesheet and the
+viewport meta tag — do not duplicate them with hard-coded pixel values in
+your own CSS (later rules override the generated ones).
 
 Available as `site.mobile_width`, `site.tablet_width`, `site.desktop_width` bindings:
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `responsive.mobile` | string | `768px` | Mobile breakpoint |
-| `responsive.tablet` | string | `1024px` | Tablet breakpoint |
-| `responsive.desktop` | string | `1200px` | Desktop breakpoint |
+| `responsive.mobile` | string | `768px` | Max viewport width for mobile layout (`<= mobile` is mobile) |
+| `responsive.tablet` | string | `1024px` | Max viewport width for tablet layout (`<= tablet` is tablet, wider is desktop) |
+| `responsive.desktop` | string | `1200px` | Max content/container width (`.container` cap). Not a breakpoint |
+| `responsive.viewport` | string | `device-width` | Viewport width: `"device-width"`, a number (`"1200"`), or a complete value (used verbatim) |
+
+With the defaults above, viewports behave as `> 1024px` desktop,
+`769–1024px` tablet, `<= 768px` mobile, with content capped at `1200px`.
+`desktop` never becomes an `@media` breakpoint: at a `768px` viewport the
+container (`width: 100%; max-width: 1200px`) simply shrinks to fit.
+
+`viewport` renders into every page as:
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1">
+```
+
+A complete value such as `"width=device-width, initial-scale=1"` is used
+verbatim and never duplicated into `width=width=...`.
+
+Omitting `responsive` entirely keeps working: the defaults above apply.
+Breakpoints must be valid CSS lengths in `mobile < tablet` order, otherwise
+the build fails with a validation error.
+
+Previewing: `garterscopic dev` serves the generated site as-is, so what you
+see is real responsive behavior — resize the browser window to the
+configured widths (the server logs them on startup). Editing `site.yaml`
+while `dev` runs reloads the config and rebuilds automatically.
 
 ### Navigation Links
 
@@ -257,6 +287,7 @@ The gallery page shows all component definitions with their options, types, and 
 | `responsive.mobile` | `768px` |
 | `responsive.tablet` | `1024px` |
 | `responsive.desktop` | `1200px` |
+| `responsive.viewport` | `device-width` |
 | `icon` | `icon.png` |
 | `icon_dir` | `assets/icon` |
 | `feed.path` | `/feed.xml` |

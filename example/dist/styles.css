@@ -44,6 +44,15 @@ h1 {
     font-size: clamp(1.75rem, 1.25rem + 2.5vw, 2.5rem);
 }
 
+/* Content container: fluid within the viewport, capped at the configured
+   desktop (maximum content) width. Shrinks naturally on small viewports. */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
 /* Tablet and below: tighten page gutters and hero rhythm. */
 @media screen and (max-width: 1024px) {
     .container {
@@ -112,12 +121,8 @@ h1 {
     max-width: 100%;
 }
 
-@media screen and (max-width: 768px) {
-    .card {
-        padding: 0.875rem 1rem;
-        margin: 0.75rem 0;
-    }
-}
+/* NOTE: responsive .card spacing is generated from `responsive.mobile` in
+   site.yaml. Do not hard-code breakpoints here. */
 
 .footer {
     background: #333;
@@ -131,11 +136,8 @@ h1 {
     margin: 0;
 }
 
-@media screen and (max-width: 768px) {
-    .footer {
-        padding: 1.5rem 1rem;
-    }
-}
+/* NOTE: responsive .footer padding is generated from `responsive.mobile`
+   in site.yaml. Do not hard-code breakpoints here. */
 
 * {
     margin: 0;
@@ -188,25 +190,11 @@ pre {
     word-wrap: break-word;
 }
 
-.container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-/* Breakpoints below match responsive.mobile/tablet/desktop in site.yaml. */
-@media screen and (max-width: 1024px) {
-    .container {
-        padding: 0 16px;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    .container {
-        padding: 0 12px;
-    }
-}
+/* NOTE: the `.container` rule (fluid width, configured max-width, and
+   responsive gutters) is generated from the `responsive` section in
+   site.yaml, so it is intentionally not defined here. Do not hard-code
+   pixel breakpoints in this file — later rules override the generated
+   ones and would silently ignore the configured values. */
 
 .navbar {
     background: #333;
@@ -241,18 +229,6 @@ pre {
     text-underline-offset: 4px;
 }
 
-@media screen and (max-width: 768px) {
-    .navbar {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.75rem;
-        padding: 1rem;
-    }
-
-    .navbar-links {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.5rem;
-    }
-}
+/* NOTE: the mobile stacking of .navbar/.navbar-links is generated from
+   `responsive.mobile` in site.yaml. Do not hard-code breakpoints here. */
 

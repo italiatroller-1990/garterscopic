@@ -67,6 +67,8 @@ func (s *Server) Start() error {
 	}
 
 	log.Printf("Development server running at http://%s", addr)
+	log.Printf("Responsive: mobile <= %s, tablet <= %s, container <= %s — resize the browser to preview each range",
+		s.Config.Responsive.Mobile, s.Config.Responsive.Tablet, s.Config.Responsive.Desktop)
 
 	if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return err
@@ -164,6 +166,11 @@ func (s *Server) rebuild(changedFiles []string) {
 
 	log.Println("Source changed, rebuilding...")
 
+	// Re-read site.yaml so config edits (e.g. responsive breakpoints) take
+	// effect without restarting the server. The builder shares this config
+	// pointer, so it picks up the fresh values on Load/Build below.
+	s.reloadConfig()
+
 	if err := s.Builder.Load(); err != nil {
 		log.Printf("Build load error: %v", err)
 		return
@@ -180,6 +187,18 @@ func (s *Server) rebuild(changedFiles []string) {
 	} else {
 		log.Printf("Build complete: %d pages generated", result.PagesGenerated)
 	}
+}
+
+// reloadConfig re-reads site.yaml into the shared config so dev rebuilds
+// reflect config edits without a restart. On failure the previous config
+// is kept and the error is logged.
+func (s *Server) reloadConfig() {
+	fresh, err := config.Load("site.yaml")
+	if err != nil {
+		log.Printf("Config reload error: %v", err)
+		return
+	}
+	*s.Config = *fresh
 }
 
 // rebuildChanged re-renders only the pages affected by the changed files

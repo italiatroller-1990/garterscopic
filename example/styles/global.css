@@ -49,22 +49,8 @@ pre {
     word-wrap: break-word;
 }
 
-.container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-/* Breakpoints below match responsive.mobile/tablet/desktop in site.yaml. */
-@media screen and (max-width: 1024px) {
-    .container {
-        padding: 0 16px;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    .container {
-        padding: 0 12px;
-    }
-}
+/* NOTE: the `.container` rule (fluid width, configured max-width, and
+   responsive gutters) is generated from the `responsive` section in
+   site.yaml, so it is intentionally not defined here. Do not hard-code
+   pixel breakpoints in this file — later rules override the generated
+   ones and would silently ignore the configured values. */

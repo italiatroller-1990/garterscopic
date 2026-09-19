@@ -172,3 +172,53 @@ func TestGenerateResponsiveCSSRemUnits(t *testing.T) {
 		}
 	}
 }
+
+func TestGenerateResponsiveCSSUsesConfiguredValues(t *testing.T) {
+	cfg := &config.SiteConfig{
+		Responsive: config.ResponsiveConfig{
+			Mobile:  "600px",
+			Tablet:  "900px",
+			Desktop: "1100px",
+		},
+	}
+
+	css := GenerateResponsiveCSS(cfg)
+
+	for _, want := range []string{
+		"@media screen and (max-width: 600px)",
+		"@media screen and (max-width: 900px)",
+		"max-width: 1100px",
+	} {
+		if !strings.Contains(css, want) {
+			t.Errorf("expected CSS to contain %q, got:\n%s", want, css)
+		}
+	}
+
+	// Desktop is the container width, never a media-query breakpoint.
+	if strings.Contains(css, "@media screen and (max-width: 1100px)") {
+		t.Errorf("expected desktop value to never appear as a media breakpoint, got:\n%s", css)
+	}
+
+	// No stale defaults may leak in when custom values are configured.
+	for _, stale := range []string{"768px", "1024px", "1200px"} {
+		if strings.Contains(css, stale) {
+			t.Errorf("expected CSS to not contain stale default %q, got:\n%s", stale, css)
+		}
+	}
+}
+
+func TestGenerateResponsiveCSSContainerMaxWidth(t *testing.T) {
+	cfg := &config.SiteConfig{
+		Responsive: config.ResponsiveConfig{
+			Mobile:  "768px",
+			Tablet:  "1024px",
+			Desktop: "1400px",
+		},
+	}
+
+	css := GenerateResponsiveCSS(cfg)
+
+	if !strings.Contains(css, ".container") || !strings.Contains(css, "max-width: 1400px") {
+		t.Errorf("expected .container with max-width: 1400px, got:\n%s", css)
+	}
+}

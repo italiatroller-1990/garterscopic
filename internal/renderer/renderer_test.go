@@ -425,6 +425,29 @@ func TestRenderSEOMetaTagsCustomViewport(t *testing.T) {
 	}
 }
 
+func TestRenderSEOMetaTagsCompleteViewportValue(t *testing.T) {
+	r := New(map[string]components.Definition{})
+	page := &pages.Page{Title: "Test"}
+
+	tags := r.RenderSEOMetaTagsExclViewport(page, "", false, "width=device-width, initial-scale=1")
+	if !contains(tags, `<meta name="viewport" content="width=device-width, initial-scale=1">`) {
+		t.Errorf("expected complete viewport value used verbatim, got %q", tags)
+	}
+	if contains(tags, "width=width=") {
+		t.Errorf("expected no duplicated width=, got %q", tags)
+	}
+}
+
+func TestRenderSEOMetaTagsEmptyViewport(t *testing.T) {
+	r := New(map[string]components.Definition{})
+	page := &pages.Page{Title: "Test"}
+
+	tags := r.RenderSEOMetaTagsExclViewport(page, "", false, "")
+	if !contains(tags, `<meta name="viewport" content="width=device-width, initial-scale=1">`) {
+		t.Errorf("expected device-width fallback for empty viewport, got %q", tags)
+	}
+}
+
 func contains(s, substr string) bool {
 	// Simple substring check
 	for i := 0; i <= len(s)-len(substr); i++ {
